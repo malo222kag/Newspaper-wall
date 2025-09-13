@@ -1,0 +1,18 @@
+<div class="project-detail">
+    {% if project.cover %}
+    <div class="project-cover" style="background-image: url('{{ project.cover.url }}');"></div>
+    {% endif %}
+    
+    <div class="project-header">
+        <h1 class="project-title">{{ project.title }}</h1>
+        <div class="project-meta">
+            <span class="project-date">{{ project.created_at|date:"d.m.Y" }}</span>
+        </div>
+    </div>
+    
+    <div class="project-content">
+        <div class="project-description">
+            {{ project.description|linebreaks }}
+        </div>
+    </div>
+</div>

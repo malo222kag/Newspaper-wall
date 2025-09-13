@@ -378,6 +378,9 @@ class WallApp {
 
                 // Определяем контраст текста
                 this.setContrast(tile, accentColor);
+                
+                // Обрезаем текст в зависимости от размера блока
+                this.truncateText(tile, item.width, item.height);
             });
 
             // Случайная анимация появления
@@ -409,6 +412,33 @@ class WallApp {
             [array[i], array[j]] = [array[j], array[i]];
         }
         return array;
+    }
+
+    truncateText(tile, width, height) {
+        const title = tile.querySelector('.tile-title');
+        const excerpt = tile.querySelector('.tile-excerpt');
+        
+        if (!title || !excerpt) return;
+        
+        // Определяем максимальное количество строк в зависимости от размера
+        const maxTitleLines = Math.max(1, Math.floor(height / 60));
+        const maxExcerptLines = Math.max(2, Math.floor(height / 40));
+        
+        // Устанавливаем стили для обрезания
+        title.style.setProperty('-webkit-line-clamp', maxTitleLines);
+        excerpt.style.setProperty('-webkit-line-clamp', maxExcerptLines);
+        
+        // Обрезаем текст программно для надежности
+        const titleText = title.textContent;
+        const excerptText = excerpt.textContent;
+        
+        if (titleText.length > 50) {
+            title.textContent = titleText.substring(0, 47) + '...';
+        }
+        
+        if (excerptText.length > 150) {
+            excerpt.textContent = excerptText.substring(0, 147) + '...';
+        }
     }
 
     setContrast(tile, accentColor) {

@@ -81,13 +81,9 @@ html, body {
     margin-bottom: clamp(0.25rem, 1vw, 0.75rem);
     color: #374151;
     text-shadow: 0 1px 2px rgba(255, 255, 255, 0.8);
-    overflow: hidden;
-    text-overflow: ellipsis;
-    display: -webkit-box;
-    -webkit-line-clamp: 3;
-    -webkit-box-orient: vertical;
     word-wrap: break-word;
     hyphens: auto;
+    flex-shrink: 0; /* Заголовок не сжимается */
 }
 
 .tile-excerpt {
@@ -95,14 +91,14 @@ html, body {
     line-height: 1.4;
     color: #6b7280;
     text-shadow: 0 1px 2px rgba(255, 255, 255, 0.6);
-    overflow: hidden;
-    text-overflow: ellipsis;
-    display: -webkit-box;
-    -webkit-line-clamp: 4;
-    -webkit-box-orient: vertical;
     word-wrap: break-word;
     hyphens: auto;
     flex-grow: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 6; /* Максимум 6 строк */
+    -webkit-box-orient: vertical;
 }
 
 .tile-border {
@@ -132,6 +128,7 @@ html, body {
     z-index: 4;
     backdrop-filter: blur(5px);
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    flex-shrink: 0; /* Кнопка не сжимается */
 }
 
 .tile-more-btn:hover {

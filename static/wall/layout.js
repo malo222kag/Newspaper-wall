@@ -429,25 +429,17 @@ class WallApp {
         
         if (!title || !excerpt) return;
         
-        // Определяем максимальное количество строк в зависимости от размера
-        const maxTitleLines = Math.max(2, Math.floor(height / 50));
-        const maxExcerptLines = Math.max(3, Math.floor(height / 35));
+        // Заголовок всегда показывается полностью
+        title.style.setProperty('-webkit-line-clamp', 'none');
         
-        // Устанавливаем стили для обрезания
-        title.style.setProperty('-webkit-line-clamp', maxTitleLines);
-        excerpt.style.setProperty('-webkit-line-clamp', maxExcerptLines);
+        // Для описания рассчитываем количество строк в зависимости от размера блока
+        const availableHeight = height - 100; // Вычитаем место для заголовка и кнопки
+        const lineHeight = 20; // Примерная высота строки
+        const maxLines = Math.max(2, Math.floor(availableHeight / lineHeight));
         
-        // Обрезаем текст программно для надежности (менее агрессивно)
-        const titleText = title.textContent;
-        const excerptText = excerpt.textContent;
+        excerpt.style.setProperty('-webkit-line-clamp', maxLines);
         
-        if (titleText.length > 80) {
-            title.textContent = titleText.substring(0, 77) + '...';
-        }
-        
-        if (excerptText.length > 200) {
-            excerpt.textContent = excerptText.substring(0, 197) + '...';
-        }
+        // Убираем программное обрезание - CSS сам обрежет текст
     }
 
     setContrast(tile, accentColor) {

@@ -421,23 +421,23 @@ class WallApp {
         if (!title || !excerpt) return;
         
         // Определяем максимальное количество строк в зависимости от размера
-        const maxTitleLines = Math.max(1, Math.floor(height / 60));
-        const maxExcerptLines = Math.max(2, Math.floor(height / 40));
+        const maxTitleLines = Math.max(2, Math.floor(height / 50));
+        const maxExcerptLines = Math.max(3, Math.floor(height / 35));
         
         // Устанавливаем стили для обрезания
         title.style.setProperty('-webkit-line-clamp', maxTitleLines);
         excerpt.style.setProperty('-webkit-line-clamp', maxExcerptLines);
         
-        // Обрезаем текст программно для надежности
+        // Обрезаем текст программно для надежности (менее агрессивно)
         const titleText = title.textContent;
         const excerptText = excerpt.textContent;
         
-        if (titleText.length > 50) {
-            title.textContent = titleText.substring(0, 47) + '...';
+        if (titleText.length > 80) {
+            title.textContent = titleText.substring(0, 77) + '...';
         }
         
-        if (excerptText.length > 150) {
-            excerpt.textContent = excerptText.substring(0, 147) + '...';
+        if (excerptText.length > 200) {
+            excerpt.textContent = excerptText.substring(0, 197) + '...';
         }
     }
 

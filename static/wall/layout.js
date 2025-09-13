@@ -318,6 +318,15 @@ class WallApp {
                 this.shuffleLayout();
             });
         }
+
+        // Обработчик клика по кнопкам "Подробнее"
+        document.addEventListener('click', (e) => {
+            if (e.target.classList.contains('tile-more-btn')) {
+                e.stopPropagation();
+                const slug = e.target.dataset.slug;
+                this.openModal(slug);
+            }
+        });
     }
 
     layoutTiles() {

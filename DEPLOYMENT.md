@@ -123,13 +123,13 @@ nano .env
 **Настройте следующие переменные в `.env`:**
 
 ```env
-SECRET_KEY=your-super-secret-key-here-generate-new-one
+SECRET_KEY=efjnoiuwhfoiu2nedj2udnijewcnxmrd2oixd2o3idj2ij3e20i3jexo2ijedoi2joiw1mwdkxmwekdnkj2n3jknxerx239uejizwsdmio12iwjexd2izmomdw2o3ieo2i3xe
 DEBUG=False
-ALLOWED_HOSTS=your-domain.com,www.your-domain.com,your-server-ip
+ALLOWED_HOSTS=zuif.ru,www.zuif.ru,83.166.244.227
 
 DB_NAME=newspaper_wall
 DB_USER=newspaper_user
-DB_PASSWORD=your_secure_password
+DB_PASSWORD=FanDinhDuy1994MuhinaAnna.
 DB_HOST=localhost
 DB_PORT=5432
 

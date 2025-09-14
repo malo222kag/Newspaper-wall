@@ -1,6 +1,6 @@
 # 🚀 Деплой Newspaper Wall на сервер
 
-Полное руководство по развертыванию Django приложения "Block Newspaper Wall" на продакшен сервере.
+Полное руководство по развертыванию Django приложения "Block Newspaper Wall" на продакшен сервере с поддержкой мобильных устройств и кириллицы.
 
 ## 📋 Требования к серверу
 
@@ -9,9 +9,49 @@
 - **CPU**: 1 ядро (рекомендуется 2+)
 - **Диск**: Минимум 10GB свободного места
 - **Python**: 3.11+
-- **PostgreSQL**: 12+
+- **PostgreSQL**: 12+ (или SQLite для простых случаев)
 - **Nginx**: 1.18+
+- **Gunicorn**: 21.2+
 - **Redis**: 6+ (опционально, для кэширования)
+
+## ⚡ Быстрое обновление
+
+Если проект уже развернут, используйте эти команды для обновления:
+
+```bash
+# 1. Переходим в директорию проекта
+cd /var/www/newspaper_wall
+
+# 2. Активируем виртуальное окружение
+source .venv/bin/activate
+
+# 3. Обновляем код
+git pull origin main
+
+# 4. Устанавливаем новые зависимости
+pip install -r requirements.txt
+
+# 5. Выполняем миграции
+python manage.py migrate
+
+# 6. Собираем статические файлы
+python manage.py collectstatic --noinput
+
+# 7. Создаем папку media (если не существует)
+mkdir -p media/covers
+chown -R www-data:www-data media/
+
+# 8. Перезапускаем Gunicorn
+pkill -f gunicorn
+gunicorn --config gunicorn.conf.py newspaper_wall.wsgi:application --daemon
+
+# 9. Перезапускаем Nginx
+sudo systemctl restart nginx
+
+# 10. Проверяем статус
+ps aux | grep gunicorn
+curl -I http://your-domain.com
+```
 
 ## 🔧 Подготовка сервера
 
@@ -93,7 +133,7 @@ sudo mkdir -p /var/www
 cd /var/www
 
 # Клонирование репозитория
-sudo git clone https://github.com/your-username/newspaper-wall.git newspaper_wall
+sudo git clone https://github.com/malo222kag/newspaper-wall.git newspaper_wall
 sudo chown -R $USER:$USER /var/www/newspaper_wall
 cd /var/www/newspaper_wall
 ```

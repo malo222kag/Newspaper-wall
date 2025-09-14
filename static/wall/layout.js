@@ -141,6 +141,10 @@ class WallApp {
     }
 
     layoutTiles() {
+        // Скрываем все контейнеры сначала
+        if (this.container) this.container.style.display = 'none';
+        if (this.mobileContainer) this.mobileContainer.style.display = 'none';
+        
         if (window.innerWidth <= 768) {
             this.layoutMobileTiles();
         } else {
@@ -149,6 +153,7 @@ class WallApp {
     }
 
     layoutDesktopTiles() {
+        this.container.style.display = 'block';
         const containerWidth = this.container.offsetWidth;
         const containerHeight = this.container.offsetHeight;
         
@@ -167,15 +172,35 @@ class WallApp {
     }
 
     layoutMobileTiles() {
-        this.mobileContainer.innerHTML = '<button id="mobile-shuffle-btn" class="shuffle-btn">🎲</button>';
+        this.mobileContainer.style.display = 'flex';
+        this.mobileContainer.innerHTML = `
+            <button id="mobile-shuffle-btn" class="shuffle-btn">🎲</button>
+            <div class="mobile-indicators"></div>
+        `;
         
         this.projects.forEach((project, index) => {
             const tile = this.createMobileTile(project, index);
             this.mobileContainer.appendChild(tile);
         });
 
+        this.createMobileIndicators();
         this.showMobileProject(0);
         this.bindMobileTileEvents();
+    }
+
+    createMobileIndicators() {
+        const indicatorsContainer = this.mobileContainer.querySelector('.mobile-indicators');
+        indicatorsContainer.innerHTML = '';
+        
+        this.projects.forEach((_, index) => {
+            const indicator = document.createElement('div');
+            indicator.className = 'mobile-indicator';
+            indicator.dataset.index = index;
+            indicator.addEventListener('click', () => {
+                this.showMobileProject(index);
+            });
+            indicatorsContainer.appendChild(indicator);
+        });
     }
 
     createTile(project, index) {
@@ -301,9 +326,24 @@ class WallApp {
 
     showMobileProject(index) {
         const tiles = this.mobileContainer.querySelectorAll('.mobile-tile');
+        const indicators = this.mobileContainer.querySelectorAll('.mobile-indicator');
+        
         tiles.forEach((tile, i) => {
-            tile.style.display = i === index ? 'flex' : 'none';
+            if (i === index) {
+                tile.style.display = 'flex';
+                tile.style.opacity = '1';
+                tile.style.transform = 'scale(1)';
+            } else {
+                tile.style.display = 'none';
+                tile.style.opacity = '0';
+                tile.style.transform = 'scale(0.9)';
+            }
         });
+        
+        indicators.forEach((indicator, i) => {
+            indicator.classList.toggle('active', i === index);
+        });
+        
         this.currentMobileIndex = index;
     }
 

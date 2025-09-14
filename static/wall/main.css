@@ -352,14 +352,22 @@ html, body {
 
 /* Mobile styles */
 @media (max-width: 768px) {
-    .wall-container {
+    #wall-container.desktop-layout {
+        display: none !important;
+    }
+    
+    #mobile-wall-container.mobile-layout {
+        display: flex !important;
+        flex-direction: row;
         overflow-x: auto;
         overflow-y: hidden;
         scroll-snap-type: x mandatory;
         -webkit-overflow-scrolling: touch;
+        width: 100vw;
+        height: 100vh;
     }
     
-    .tile {
+    .mobile-tile {
         width: 100vw !important;
         height: 100vh !important;
         position: relative !important;
@@ -373,9 +381,10 @@ html, body {
         justify-content: center;
         align-items: center;
         text-align: center;
+        flex-shrink: 0;
     }
     
-    .tile-content {
+    .mobile-tile .tile-content {
         width: 100%;
         height: 100%;
         display: flex !important;
@@ -385,13 +394,13 @@ html, body {
         text-align: center;
     }
     
-    .tile-title {
+    .mobile-tile .tile-title {
         font-size: 2.5rem !important;
         margin-bottom: 20px;
         -webkit-line-clamp: none !important;
     }
     
-    .tile-excerpt {
+    .mobile-tile .tile-excerpt {
         font-size: 1.2rem !important;
         line-height: 1.6;
         margin-bottom: 30px;
@@ -400,7 +409,7 @@ html, body {
         overflow-y: auto;
     }
     
-    .tile-more-btn {
+    .mobile-tile .tile-more-btn {
         position: static !important;
         margin-top: 20px;
         padding: 15px 30px;
@@ -421,14 +430,28 @@ html, body {
         cursor: pointer;
     }
     
-    /* Hide desktop layout on mobile */
-    .wall-container.desktop-layout {
-        display: none;
+    .mobile-indicators {
+        position: fixed;
+        bottom: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        display: flex;
+        gap: 10px;
+        z-index: 1000;
     }
     
-    .wall-container.mobile-layout {
-        display: flex;
-        flex-direction: row;
+    .mobile-indicator {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.5);
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    
+    .mobile-indicator.active {
+        background: rgba(255, 255, 255, 1);
+        transform: scale(1.2);
     }
 }
 

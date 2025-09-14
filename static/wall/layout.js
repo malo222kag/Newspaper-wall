@@ -24,6 +24,15 @@ class AdaptiveLayoutGenerator {
         if (projects.length === 5) {
             return this.generateFiveBlockLayout(shuffledProjects);
         }
+        if (projects.length === 6) {
+            return this.generateSixBlockLayout(shuffledProjects);
+        }
+        if (projects.length === 7) {
+            return this.generateSevenBlockLayout(shuffledProjects);
+        }
+        if (projects.length === 8) {
+            return this.generateEightBlockLayout(shuffledProjects);
+        }
         
         // Для большего количества используем стандартную сетку
         const { rows, cols } = this.calculateGridDimensions(projects.length);
@@ -315,6 +324,252 @@ class AdaptiveLayoutGenerator {
                         y: this.padding + (i - 1) * (rightBlockHeight + this.padding),
                         width: rightBlockWidth,
                         height: rightBlockHeight
+                    });
+                }
+            }
+        ];
+        
+        const randomLayout = layouts[Math.floor(Math.random() * layouts.length)];
+        randomLayout();
+        return rectangles;
+    }
+
+    generateSixBlockLayout(projects) {
+        const rectangles = [];
+        const layouts = [
+            // Вариант 1: Стандартная сетка 2x3
+            () => {
+                const blockWidth = (this.containerWidth - this.padding * 4) / 3;
+                const blockHeight = (this.containerHeight - this.padding * 3) / 2;
+                
+                for (let i = 0; i < 6; i++) {
+                    const row = Math.floor(i / 3);
+                    const col = i % 3;
+                    
+                    rectangles.push({
+                        project: projects[i],
+                        x: this.padding + col * (blockWidth + this.padding),
+                        y: this.padding + row * (blockHeight + this.padding),
+                        width: blockWidth,
+                        height: blockHeight
+                    });
+                }
+            },
+            // Вариант 2: Один большой слева, пять маленьких справа
+            () => {
+                const leftBlockWidth = (this.containerWidth - this.padding * 3) / 2;
+                const leftBlockHeight = this.containerHeight - this.padding * 2;
+                
+                rectangles.push({
+                    project: projects[0],
+                    x: this.padding,
+                    y: this.padding,
+                    width: leftBlockWidth,
+                    height: leftBlockHeight
+                });
+                
+                const rightBlockWidth = (this.containerWidth - this.padding * 3) / 2;
+                const rightBlockHeight = (this.containerHeight - this.padding * 6) / 5;
+                
+                for (let i = 1; i < 6; i++) {
+                    rectangles.push({
+                        project: projects[i],
+                        x: this.padding * 2 + leftBlockWidth,
+                        y: this.padding + (i - 1) * (rightBlockHeight + this.padding),
+                        width: rightBlockWidth,
+                        height: rightBlockHeight
+                    });
+                }
+            }
+        ];
+        
+        const randomLayout = layouts[Math.floor(Math.random() * layouts.length)];
+        randomLayout();
+        return rectangles;
+    }
+
+    generateSevenBlockLayout(projects) {
+        const rectangles = [];
+        const layouts = [
+            // Вариант 1: Один большой сверху, шесть маленьких снизу
+            () => {
+                const topBlockWidth = this.containerWidth - this.padding * 2;
+                const topBlockHeight = (this.containerHeight - this.padding * 3) / 2;
+                
+                rectangles.push({
+                    project: projects[0],
+                    x: this.padding,
+                    y: this.padding,
+                    width: topBlockWidth,
+                    height: topBlockHeight
+                });
+                
+                const bottomBlockWidth = (this.containerWidth - this.padding * 7) / 6;
+                const bottomBlockHeight = (this.containerHeight - this.padding * 3) / 2;
+                
+                for (let i = 1; i < 7; i++) {
+                    rectangles.push({
+                        project: projects[i],
+                        x: this.padding + (i - 1) * (bottomBlockWidth + this.padding),
+                        y: this.padding * 2 + topBlockHeight,
+                        width: bottomBlockWidth,
+                        height: bottomBlockHeight
+                    });
+                }
+            },
+            // Вариант 2: Один большой слева, шесть маленьких справа
+            () => {
+                const leftBlockWidth = (this.containerWidth - this.padding * 3) / 2;
+                const leftBlockHeight = this.containerHeight - this.padding * 2;
+                
+                rectangles.push({
+                    project: projects[0],
+                    x: this.padding,
+                    y: this.padding,
+                    width: leftBlockWidth,
+                    height: leftBlockHeight
+                });
+                
+                const rightBlockWidth = (this.containerWidth - this.padding * 3) / 2;
+                const rightBlockHeight = (this.containerHeight - this.padding * 7) / 6;
+                
+                for (let i = 1; i < 7; i++) {
+                    rectangles.push({
+                        project: projects[i],
+                        x: this.padding * 2 + leftBlockWidth,
+                        y: this.padding + (i - 1) * (rightBlockHeight + this.padding),
+                        width: rightBlockWidth,
+                        height: rightBlockHeight
+                    });
+                }
+            },
+            // Вариант 3: Два больших сверху, пять маленьких снизу
+            () => {
+                const topBlockWidth = (this.containerWidth - this.padding * 3) / 2;
+                const topBlockHeight = (this.containerHeight - this.padding * 3) / 2;
+                
+                rectangles.push({
+                    project: projects[0],
+                    x: this.padding,
+                    y: this.padding,
+                    width: topBlockWidth,
+                    height: topBlockHeight
+                });
+                
+                rectangles.push({
+                    project: projects[1],
+                    x: this.padding * 2 + topBlockWidth,
+                    y: this.padding,
+                    width: topBlockWidth,
+                    height: topBlockHeight
+                });
+                
+                const bottomBlockWidth = (this.containerWidth - this.padding * 6) / 5;
+                const bottomBlockHeight = (this.containerHeight - this.padding * 3) / 2;
+                
+                for (let i = 2; i < 7; i++) {
+                    rectangles.push({
+                        project: projects[i],
+                        x: this.padding + (i - 2) * (bottomBlockWidth + this.padding),
+                        y: this.padding * 2 + topBlockHeight,
+                        width: bottomBlockWidth,
+                        height: bottomBlockHeight
+                    });
+                }
+            }
+        ];
+        
+        const randomLayout = layouts[Math.floor(Math.random() * layouts.length)];
+        randomLayout();
+        return rectangles;
+    }
+
+    generateEightBlockLayout(projects) {
+        const rectangles = [];
+        const layouts = [
+            // Вариант 1: Один большой сверху, семь маленьких снизу
+            () => {
+                const topBlockWidth = this.containerWidth - this.padding * 2;
+                const topBlockHeight = (this.containerHeight - this.padding * 3) / 2;
+                
+                rectangles.push({
+                    project: projects[0],
+                    x: this.padding,
+                    y: this.padding,
+                    width: topBlockWidth,
+                    height: topBlockHeight
+                });
+                
+                const bottomBlockWidth = (this.containerWidth - this.padding * 8) / 7;
+                const bottomBlockHeight = (this.containerHeight - this.padding * 3) / 2;
+                
+                for (let i = 1; i < 8; i++) {
+                    rectangles.push({
+                        project: projects[i],
+                        x: this.padding + (i - 1) * (bottomBlockWidth + this.padding),
+                        y: this.padding * 2 + topBlockHeight,
+                        width: bottomBlockWidth,
+                        height: bottomBlockHeight
+                    });
+                }
+            },
+            // Вариант 2: Один большой слева, семь маленьких справа
+            () => {
+                const leftBlockWidth = (this.containerWidth - this.padding * 3) / 2;
+                const leftBlockHeight = this.containerHeight - this.padding * 2;
+                
+                rectangles.push({
+                    project: projects[0],
+                    x: this.padding,
+                    y: this.padding,
+                    width: leftBlockWidth,
+                    height: leftBlockHeight
+                });
+                
+                const rightBlockWidth = (this.containerWidth - this.padding * 3) / 2;
+                const rightBlockHeight = (this.containerHeight - this.padding * 8) / 7;
+                
+                for (let i = 1; i < 8; i++) {
+                    rectangles.push({
+                        project: projects[i],
+                        x: this.padding * 2 + leftBlockWidth,
+                        y: this.padding + (i - 1) * (rightBlockHeight + this.padding),
+                        width: rightBlockWidth,
+                        height: rightBlockHeight
+                    });
+                }
+            },
+            // Вариант 3: Два больших сверху, шесть маленьких снизу
+            () => {
+                const topBlockWidth = (this.containerWidth - this.padding * 3) / 2;
+                const topBlockHeight = (this.containerHeight - this.padding * 3) / 2;
+                
+                rectangles.push({
+                    project: projects[0],
+                    x: this.padding,
+                    y: this.padding,
+                    width: topBlockWidth,
+                    height: topBlockHeight
+                });
+                
+                rectangles.push({
+                    project: projects[1],
+                    x: this.padding * 2 + topBlockWidth,
+                    y: this.padding,
+                    width: topBlockWidth,
+                    height: topBlockHeight
+                });
+                
+                const bottomBlockWidth = (this.containerWidth - this.padding * 7) / 6;
+                const bottomBlockHeight = (this.containerHeight - this.padding * 3) / 2;
+                
+                for (let i = 2; i < 8; i++) {
+                    rectangles.push({
+                        project: projects[i],
+                        x: this.padding + (i - 2) * (bottomBlockWidth + this.padding),
+                        y: this.padding * 2 + topBlockHeight,
+                        width: bottomBlockWidth,
+                        height: bottomBlockHeight
                     });
                 }
             }

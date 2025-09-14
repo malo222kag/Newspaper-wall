@@ -651,12 +651,16 @@ class WallApp {
             if (e.target.classList.contains('tile-more-btn')) {
                 e.stopPropagation();
                 const slug = e.target.dataset.slug;
+                console.log('Clicked more button, slug:', slug);
                 this.openModal(slug);
             } else if (e.target.closest('.tile')) {
                 const tile = e.target.closest('.tile');
                 const slug = tile.dataset.slug;
+                console.log('Clicked tile, slug:', slug, 'tile:', tile);
                 if (slug) {
                     this.openModal(slug);
+                } else {
+                    console.log('No slug found for tile');
                 }
             }
         });
@@ -718,6 +722,9 @@ class WallApp {
         tile.className = 'tile';
         tile.dataset.projectId = project.id;
         tile.dataset.slug = project.slug;
+        
+        // Отладочная информация
+        console.log('Creating tile for project:', project.title, 'slug:', project.slug);
         
         // Применяем стили напрямую
         tile.style.position = 'absolute';

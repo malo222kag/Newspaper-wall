@@ -94,11 +94,15 @@ html, body {
     word-wrap: break-word;
     hyphens: auto;
     flex-grow: 1;
+    flex-shrink: 1;
     overflow: hidden;
     text-overflow: ellipsis;
     display: -webkit-box;
-    -webkit-line-clamp: 20; /* Увеличиваем до 20 строк */
+    -webkit-line-clamp: 100; /* Увеличиваем до 100 строк */
     -webkit-box-orient: vertical;
+    height: auto;
+    min-height: 0;
+    max-height: none;
 }
 
 .tile-border {

@@ -675,12 +675,20 @@ class WallApp {
     }
 
     layoutDesktopTiles() {
+        console.log('layoutDesktopTiles called');
+        console.log('Container:', this.container);
+        console.log('Projects:', this.projects);
+        
         this.container.style.display = 'block';
         const containerWidth = this.container.offsetWidth;
         const containerHeight = this.container.offsetHeight;
         
+        console.log('Container size:', containerWidth, 'x', containerHeight);
+        
         const generator = new AdaptiveLayoutGenerator(containerWidth, containerHeight);
         const rectangles = generator.generateLayout(this.projects);
+        
+        console.log('Generated rectangles:', rectangles.length);
         
         this.container.innerHTML = '';
         
@@ -728,23 +736,39 @@ class WallApp {
         const tileRect = tileElement.getBoundingClientRect();
         const tileHeight = tileRect.height;
         
+        // Получаем реальные размеры заголовка и кнопки
+        const titleElement = tileElement.querySelector('.tile-title');
+        const buttonElement = tileElement.querySelector('.tile-more-btn');
+        
+        const titleHeight = titleElement ? titleElement.offsetHeight : 30;
+        const buttonHeight = buttonElement ? buttonElement.offsetHeight + 16 : 40;
+        const padding = 32; // 1rem * 2 = 32px
+        
         // Вычисляем доступную высоту для текста
-        // Учитываем отступы, заголовок и кнопку
-        const padding = 32; // 1rem * 2 = 32px (padding блока)
-        const titleHeight = 50; // увеличиваем высоту заголовка
-        const buttonHeight = 50; // увеличиваем высоту кнопки
         const availableHeight = tileHeight - padding - titleHeight - buttonHeight;
         
         // Вычисляем количество строк на основе доступной высоты
-        const lineHeight = 20; // увеличиваем высоту строки
-        const maxLines = Math.max(3, Math.floor(availableHeight / lineHeight)); // минимум 3 строки
+        const lineHeight = 20; // высота строки
+        const maxLines = Math.max(10, Math.floor(availableHeight / lineHeight)); // минимум 10 строк
         
         // Устанавливаем количество строк
         excerptElement.style.webkitLineClamp = maxLines.toString();
         
+        // Убираем все ограничения по высоте
+        excerptElement.style.height = 'auto';
+        excerptElement.style.minHeight = '0';
+        excerptElement.style.maxHeight = 'none';
+        excerptElement.style.flexGrow = '1';
+        excerptElement.style.flexShrink = '1';
+        
+        // Убираем ограничения по количеству строк в CSS
+        excerptElement.style.setProperty('-webkit-line-clamp', maxLines.toString(), 'important');
+        
         // Если текст не помещается, добавляем многоточие
         if (excerptElement.scrollHeight > availableHeight) {
             excerptElement.style.textOverflow = 'ellipsis';
+        } else {
+            excerptElement.style.textOverflow = 'clip';
         }
     }
 
@@ -867,7 +891,8 @@ class WallApp {
         tile.style.left = `${rect.x}px`;
         tile.style.top = `${rect.y}px`;
         
-        this.truncateText(tile, rect.width, rect.height);
+        // Убираем truncateText, так как adjustTextToBlockSize делает это лучше
+        // this.truncateText(tile, rect.width, rect.height);
     }
 
     truncateText(tile, width, height) {

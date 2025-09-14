@@ -131,6 +131,10 @@ dmypy.json
 # Django specific
 media/
 staticfiles/
+# Исключаем дублированные статические файлы
+staticfiles/wall/*.js
+staticfiles/wall/*.css
+staticfiles/wall/*.gz
 logs/
 *.log
 

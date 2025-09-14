@@ -360,6 +360,10 @@ html, body {
         align-items: center;
         text-align: center;
         flex-shrink: 0;
+        background: #fafafa !important;
+        border-radius: 6px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        border: 1px solid #d1d5db;
     }
     
     .mobile-tile .tile-content {

@@ -1,6 +1,7 @@
 from django.db import models
 from django.utils.text import slugify
 from django.urls import reverse
+from unidecode import unidecode
 
 
 class Project(models.Model):
@@ -28,7 +29,9 @@ class Project(models.Model):
 
     def save(self, *args, **kwargs):
         if not self.slug:
-            self.slug = slugify(self.title)
+            # Транслитерируем кириллицу в латиницу перед созданием slug
+            transliterated_title = unidecode(self.title)
+            self.slug = slugify(transliterated_title)
         super().save(*args, **kwargs)
 
     def get_absolute_url(self):

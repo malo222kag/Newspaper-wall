@@ -193,21 +193,72 @@ class WallApp {
         tile.dataset.projectId = project.id;
         tile.dataset.slug = project.slug;
         
+        // Применяем стили напрямую
+        tile.style.position = 'absolute';
+        tile.style.background = '#fafafa';
+        tile.style.borderRadius = '6px';
+        tile.style.boxShadow = '0 2px 8px rgba(0, 0, 0, 0.08)';
+        tile.style.cursor = 'pointer';
+        tile.style.transition = 'transform 0.2s ease, box-shadow 0.2s ease, opacity 0.6s ease';
+        tile.style.overflow = 'hidden';
+        tile.style.border = '1px solid #d1d5db';
+        tile.style.opacity = '0';
+        tile.style.transform = 'scale(0.8)';
+        
         const content = document.createElement('div');
         content.className = 'tile-content';
+        content.style.position = 'relative';
+        content.style.zIndex = '2';
+        content.style.padding = '1rem';
+        content.style.height = '100%';
+        content.style.display = 'flex';
+        content.style.flexDirection = 'column';
+        content.style.justifyContent = 'flex-start';
+        content.style.textAlign = 'left';
+        content.style.overflow = 'hidden';
         
         const title = document.createElement('h2');
         title.className = 'tile-title';
         title.textContent = project.title;
+        title.style.fontSize = '1.2rem';
+        title.style.fontWeight = '600';
+        title.style.lineHeight = '1.2';
+        title.style.marginBottom = '0.5rem';
+        title.style.color = '#374151';
+        title.style.wordWrap = 'break-word';
         
         const excerpt = document.createElement('p');
         excerpt.className = 'tile-excerpt';
         excerpt.textContent = project.excerpt;
+        excerpt.style.fontSize = '0.9rem';
+        excerpt.style.lineHeight = '1.4';
+        excerpt.style.color = '#6b7280';
+        excerpt.style.wordWrap = 'break-word';
+        excerpt.style.flexGrow = '1';
+        excerpt.style.overflow = 'hidden';
+        excerpt.style.textOverflow = 'ellipsis';
+        excerpt.style.display = '-webkit-box';
+        excerpt.style.webkitLineClamp = '4';
+        excerpt.style.webkitBoxOrient = 'vertical';
         
         const moreBtn = document.createElement('button');
         moreBtn.className = 'tile-more-btn';
         moreBtn.textContent = 'Подробнее';
         moreBtn.dataset.slug = project.slug;
+        moreBtn.style.position = 'absolute';
+        moreBtn.style.bottom = '0.5rem';
+        moreBtn.style.right = '0.5rem';
+        moreBtn.style.background = 'rgba(255, 255, 255, 0.9)';
+        moreBtn.style.border = '1px solid #d1d5db';
+        moreBtn.style.borderRadius = '4px';
+        moreBtn.style.padding = '0.25rem 0.5rem';
+        moreBtn.style.fontSize = '0.75rem';
+        moreBtn.style.color = '#374151';
+        moreBtn.style.cursor = 'pointer';
+        moreBtn.style.transition = 'all 0.2s ease';
+        moreBtn.style.zIndex = '4';
+        moreBtn.style.backdropFilter = 'blur(5px)';
+        moreBtn.style.boxShadow = '0 1px 3px rgba(0, 0, 0, 0.1)';
         
         content.appendChild(title);
         content.appendChild(excerpt);

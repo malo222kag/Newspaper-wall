@@ -1,285 +1,57 @@
-/**
- * BSP (Binary Space Partitioning) Layout Generator
- * Генерирует случайную раскладку блоков без перекрытий и дыр
- */
-
 class LayoutGenerator {
-    constructor() {
-        this.minWidth = 0.18;  // Минимальная ширина блока (18% от экрана)
-        this.minHeight = 0.15; // Минимальная высота блока (15% от экрана)
-        this.random = null;
+    constructor(containerWidth, containerHeight) {
+        this.containerWidth = containerWidth;
+        this.containerHeight = containerHeight;
+        this.minWidth = 0.18;
+        this.minHeight = 0.15;
     }
 
-    /**
-     * Простой LCG (Linear Congruential Generator) для воспроизводимой рандомизации
-     */
-    initRandom(seed) {
-        if (seed) {
-            // Простой LCG
-            this.random = () => {
-                seed = (seed * 1664525 + 1013904223) % Math.pow(2, 32);
-                return seed / Math.pow(2, 32);
-            };
-        } else {
-            this.random = Math.random;
+    generateLayout(projects, seed) {
+        const random = new SeededRandom(seed);
+        const rectangles = [];
+        
+        for (let i = 0; i < projects.length; i++) {
+            const project = projects[i];
+            const rect = this.createRectangle(project, random);
+            rectangles.push(rect);
         }
+        
+        return rectangles;
     }
 
-    /**
-     * Генерирует раскладку для заданного количества блоков
-     */
-    generateLayout(blocks, containerWidth, containerHeight, seed = null) {
-        this.initRandom(seed);
+    createRectangle(project, random) {
+        const width = this.minWidth + random.next() * (1 - this.minWidth);
+        const height = this.minHeight + random.next() * (1 - this.minHeight);
         
-        if (blocks.length === 0) return [];
-        if (blocks.length === 1) {
-            return [{
-                x: 0,
-                y: 0,
-                width: containerWidth,
-                height: containerHeight,
-                block: blocks[0]
-            }];
-        }
-
-        // Создаем прямоугольник экрана в нормированных координатах
-        const screenRect = { x: 0, y: 0, width: 1, height: 1 };
-        
-        // Генерируем разбиение
-        const rectangles = this.splitRectangle(screenRect, blocks);
-        
-        // Конвертируем в пиксели
-        return rectangles.map(rect => ({
-            x: rect.x * containerWidth,
-            y: rect.y * containerHeight,
-            width: rect.width * containerWidth,
-            height: rect.height * containerHeight,
-            block: rect.block
-        }));
-    }
-
-    /**
-     * Рекурсивно разбивает прямоугольник на части
-     */
-    splitRectangle(rect, blocks) {
-        if (blocks.length === 1) {
-            return [{
-                x: rect.x,
-                y: rect.y,
-                width: rect.width,
-                height: rect.height,
-                block: blocks[0]
-            }];
-        }
-
-        if (blocks.length === 2) {
-            return this.splitTwoBlocks(rect, blocks);
-        }
-
-        // Для 3+ блоков используем рекурсивное разбиение
-        const splitIndex = this.calculateSplitIndex(blocks);
-        const leftBlocks = blocks.slice(0, splitIndex);
-        const rightBlocks = blocks.slice(splitIndex);
-
-        // Выбираем направление разбиения
-        const isVertical = this.shouldSplitVertically(rect, leftBlocks, rightBlocks);
-        
-        if (isVertical) {
-            return this.splitVertically(rect, leftBlocks, rightBlocks);
-        } else {
-            return this.splitHorizontally(rect, leftBlocks, rightBlocks);
-        }
-    }
-
-    /**
-     * Разбивает прямоугольник на два блока
-     */
-    splitTwoBlocks(rect, blocks) {
-        const [block1, block2] = blocks;
-        const weight1 = this.getBlockWeight(block1);
-        const weight2 = this.getBlockWeight(block2);
-        const totalWeight = weight1 + weight2;
-        
-        const ratio = weight1 / totalWeight;
-        const isVertical = this.random() > 0.5;
-        
-        if (isVertical) {
-            const splitX = rect.x + rect.width * ratio;
-            return [
-                {
-                    x: rect.x,
-                    y: rect.y,
-                    width: splitX - rect.x,
-                    height: rect.height,
-                    block: block1
-                },
-                {
-                    x: splitX,
-                    y: rect.y,
-                    width: rect.x + rect.width - splitX,
-                    height: rect.height,
-                    block: block2
-                }
-            ];
-        } else {
-            const splitY = rect.y + rect.height * ratio;
-            return [
-                {
-                    x: rect.x,
-                    y: rect.y,
-                    width: rect.width,
-                    height: splitY - rect.y,
-                    block: block1
-                },
-                {
-                    x: rect.x,
-                    y: splitY,
-                    width: rect.width,
-                    height: rect.y + rect.height - splitY,
-                    block: block2
-                }
-            ];
-        }
-    }
-
-    /**
-     * Вертикальное разбиение
-     */
-    splitVertically(rect, leftBlocks, rightBlocks) {
-        const leftWeight = this.getTotalWeight(leftBlocks);
-        const rightWeight = this.getTotalWeight(rightBlocks);
-        const totalWeight = leftWeight + rightWeight;
-        
-        const ratio = leftWeight / totalWeight;
-        const splitX = rect.x + rect.width * ratio;
-        
-        // Проверяем минимальные размеры
-        const leftWidth = splitX - rect.x;
-        const rightWidth = rect.x + rect.width - splitX;
-        
-        if (leftWidth < this.minWidth || rightWidth < this.minWidth) {
-            // Если не помещается, пробуем горизонтальное разбиение
-            return this.splitHorizontally(rect, leftBlocks, rightBlocks);
-        }
-        
-        const leftRect = {
-            x: rect.x,
-            y: rect.y,
-            width: leftWidth,
-            height: rect.height
+        return {
+            project: project,
+            width: width,
+            height: height,
+            x: 0,
+            y: 0
         };
-        
-        const rightRect = {
-            x: splitX,
-            y: rect.y,
-            width: rightWidth,
-            height: rect.height
-        };
-        
-        return [
-            ...this.splitRectangle(leftRect, leftBlocks),
-            ...this.splitRectangle(rightRect, rightBlocks)
-        ];
-    }
-
-    /**
-     * Горизонтальное разбиение
-     */
-    splitHorizontally(rect, topBlocks, bottomBlocks) {
-        const topWeight = this.getTotalWeight(topBlocks);
-        const bottomWeight = this.getTotalWeight(bottomBlocks);
-        const totalWeight = topWeight + bottomWeight;
-        
-        const ratio = topWeight / totalWeight;
-        const splitY = rect.y + rect.height * ratio;
-        
-        // Проверяем минимальные размеры
-        const topHeight = splitY - rect.y;
-        const bottomHeight = rect.y + rect.height - splitY;
-        
-        if (topHeight < this.minHeight || bottomHeight < this.minHeight) {
-            // Если не помещается, пробуем вертикальное разбиение
-            return this.splitVertically(rect, topBlocks, bottomBlocks);
-        }
-        
-        const topRect = {
-            x: rect.x,
-            y: rect.y,
-            width: rect.width,
-            height: topHeight
-        };
-        
-        const bottomRect = {
-            x: rect.x,
-            y: splitY,
-            width: rect.width,
-            height: bottomHeight
-        };
-        
-        return [
-            ...this.splitRectangle(topRect, topBlocks),
-            ...this.splitRectangle(bottomRect, bottomBlocks)
-        ];
-    }
-
-    /**
-     * Вычисляет индекс для разбиения массива блоков
-     */
-    calculateSplitIndex(blocks) {
-        const totalWeight = this.getTotalWeight(blocks);
-        let currentWeight = 0;
-        const targetWeight = totalWeight * this.random();
-        
-        for (let i = 0; i < blocks.length - 1; i++) {
-            currentWeight += this.getBlockWeight(blocks[i]);
-            if (currentWeight >= targetWeight) {
-                return i + 1;
-            }
-        }
-        
-        return Math.floor(blocks.length / 2);
-    }
-
-    /**
-     * Определяет, нужно ли разбивать вертикально
-     */
-    shouldSplitVertically(rect, leftBlocks, rightBlocks) {
-        const aspectRatio = rect.width / rect.height;
-        const randomFactor = this.random();
-        
-        // Если прямоугольник широкий, чаще разбиваем вертикально
-        if (aspectRatio > 1.5) return true;
-        if (aspectRatio < 0.67) return false;
-        
-        return randomFactor > 0.5;
-    }
-
-    /**
-     * Получает вес блока (приоритет + небольшая случайность)
-     */
-    getBlockWeight(block) {
-        const baseWeight = Math.max(1, block.priority || 0);
-        const randomFactor = 0.8 + this.random() * 0.4; // ±20% случайности
-        return baseWeight * randomFactor;
-    }
-
-    /**
-     * Получает общий вес группы блоков
-     */
-    getTotalWeight(blocks) {
-        return blocks.reduce((sum, block) => sum + this.getBlockWeight(block), 0);
     }
 }
 
-/**
- * Основной класс приложения
- */
+class SeededRandom {
+    constructor(seed) {
+        this.seed = seed;
+    }
+
+    next() {
+        this.seed = (this.seed * 9301 + 49297) % 233280;
+        return this.seed / 233280;
+    }
+}
+
 class WallApp {
     constructor() {
-        this.layoutGenerator = new LayoutGenerator();
-        this.isResizing = false;
-        this.resizeTimeout = null;
+        this.container = document.getElementById('wall-container');
+        this.mobileContainer = document.getElementById('mobile-wall-container');
+        this.projects = window.wallData.projects;
+        this.seed = window.wallData.seed;
         this.isShuffling = false;
+        this.currentMobileIndex = 0;
         
         this.init();
     }
@@ -287,261 +59,336 @@ class WallApp {
     init() {
         this.bindEvents();
         this.layoutTiles();
-        this.setupModal();
     }
 
     bindEvents() {
-        // Обработка ресайза с debounce
-        window.addEventListener('resize', () => {
-            if (this.isResizing) return;
-            
-            this.isResizing = true;
-            clearTimeout(this.resizeTimeout);
-            
-            this.resizeTimeout = setTimeout(() => {
-                this.layoutTiles();
-                this.isResizing = false;
-            }, 100);
+        // Desktop shuffle button
+        document.getElementById('shuffle-btn').addEventListener('click', () => {
+            this.shuffleLayout();
         });
 
-        // Клавиатурная навигация
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape') {
+        // Mobile shuffle button
+        document.getElementById('mobile-shuffle-btn').addEventListener('click', () => {
+            this.shuffleMobileLayout();
+        });
+
+        // Modal events
+        document.querySelector('.close').addEventListener('click', () => {
+            this.closeModal();
+        });
+
+        document.getElementById('project-modal').addEventListener('click', (e) => {
+            if (e.target.id === 'project-modal') {
                 this.closeModal();
             }
         });
 
-        // Кнопка перемешивания
-        const shuffleBtn = document.getElementById('shuffle-btn');
-        if (shuffleBtn) {
-            shuffleBtn.addEventListener('click', () => {
-                this.shuffleLayout();
-            });
-        }
+        // Mobile touch events
+        this.setupMobileTouchEvents();
 
-        // Обработчик клика по кнопкам "Подробнее"
-        document.addEventListener('click', (e) => {
-            if (e.target.classList.contains('tile-more-btn')) {
-                e.stopPropagation();
-                const slug = e.target.dataset.slug;
-                this.openModal(slug);
+        // Window resize
+        window.addEventListener('resize', () => {
+            clearTimeout(this.resizeTimeout);
+            this.resizeTimeout = setTimeout(() => {
+                this.layoutTiles();
+            }, 250);
+        });
+    }
+
+    setupMobileTouchEvents() {
+        let startX = 0;
+        let startY = 0;
+        let isScrolling = false;
+
+        this.mobileContainer.addEventListener('touchstart', (e) => {
+            startX = e.touches[0].clientX;
+            startY = e.touches[0].clientY;
+            isScrolling = false;
+        });
+
+        this.mobileContainer.addEventListener('touchmove', (e) => {
+            if (!startX || !startY) return;
+
+            const currentX = e.touches[0].clientX;
+            const currentY = e.touches[0].clientY;
+            const diffX = Math.abs(currentX - startX);
+            const diffY = Math.abs(currentY - startY);
+
+            if (diffX > diffY) {
+                isScrolling = true;
+                e.preventDefault();
             }
+        });
+
+        this.mobileContainer.addEventListener('touchend', (e) => {
+            if (!isScrolling) return;
+
+            const endX = e.changedTouches[0].clientX;
+            const diffX = startX - endX;
+
+            if (Math.abs(diffX) > 50) {
+                if (diffX > 0) {
+                    this.nextMobileProject();
+                } else {
+                    this.prevMobileProject();
+                }
+            }
+
+            startX = 0;
+            startY = 0;
+            isScrolling = false;
         });
     }
 
     layoutTiles() {
-        const container = document.getElementById('wall-container');
-        if (!container) return;
-
-        const tiles = container.querySelectorAll('.tile');
-        if (tiles.length === 0) return;
-
-        const containerRect = container.getBoundingClientRect();
-        const blocks = Array.from(tiles).map(tile => ({
-            priority: parseInt(tile.dataset.priority) || 0,
-            element: tile
-        }));
-
-        // Генерируем seed из URL или создаем новый
-        const urlParams = new URLSearchParams(window.location.search);
-        let seed = urlParams.get('seed');
-        if (!seed) {
-            seed = Math.floor(Math.random() * 1000000);
-            // Обновляем URL с новым seed
-            const url = new URL(window.location);
-            url.searchParams.set('seed', seed);
-            window.history.replaceState({}, '', url.toString());
+        if (window.innerWidth <= 768) {
+            this.layoutMobileTiles();
+        } else {
+            this.layoutDesktopTiles();
         }
-
-        const layout = this.layoutGenerator.generateLayout(
-            blocks,
-            containerRect.width,
-            containerRect.height,
-            parseInt(seed)
-        );
-
-        // Применяем позиции к элементам с батчингом и случайной анимацией
-        requestAnimationFrame(() => {
-            // Сначала скрываем все блоки
-            tiles.forEach(tile => {
-                tile.style.opacity = '0';
-                tile.style.transform = 'scale(0.8)';
-            });
-
-            // Применяем позиции
-            layout.forEach((item, index) => {
-                const tile = tiles[index];
-                if (!tile) return;
-
-                // Добавляем отступы для видимости фона
-                const padding = 8;
-                tile.style.left = `${item.x + padding}px`;
-                tile.style.top = `${item.y + padding}px`;
-                tile.style.width = `${item.width - padding * 2}px`;
-                tile.style.height = `${item.height - padding * 2}px`;
-
-                // Применяем цвет акцента
-                const accentColor = tile.dataset.accentColor || '#111827';
-                tile.style.borderColor = accentColor;
-                tile.style.setProperty('--accent-color', accentColor);
-
-                // Определяем контраст текста
-                this.setContrast(tile, accentColor);
-                
-                // Обрезаем текст в зависимости от размера блока
-                this.truncateText(tile, item.width, item.height);
-            });
-
-            // Случайная анимация появления
-            this.animateTilesAppearance(tiles);
-        });
     }
 
-    animateTilesAppearance(tiles) {
-        // Создаем массив индексов и перемешиваем их
-        const indices = Array.from({ length: tiles.length }, (_, i) => i);
-        this.shuffleArray(indices);
-
-        // Анимируем появление каждого блока с задержкой
-        indices.forEach((index, i) => {
-            const tile = tiles[index];
-            if (!tile) return;
-
-            setTimeout(() => {
-                tile.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
-                tile.style.opacity = '1';
-                tile.style.transform = 'scale(1)';
-            }, i * 100 + Math.random() * 200); // Случайная задержка 100-300ms
+    layoutDesktopTiles() {
+        const containerWidth = this.container.offsetWidth;
+        const containerHeight = this.container.offsetHeight;
+        
+        const generator = new LayoutGenerator(containerWidth, containerHeight);
+        const rectangles = generator.generateLayout(this.projects, this.seed);
+        
+        this.container.innerHTML = '<button id="shuffle-btn" class="shuffle-btn">🎲</button>';
+        
+        rectangles.forEach((rect, index) => {
+            const tile = this.createTile(rect.project, index);
+            this.positionTile(tile, rect, containerWidth, containerHeight);
+            this.container.appendChild(tile);
         });
+
+        this.bindTileEvents();
     }
 
-    shuffleArray(array) {
-        for (let i = array.length - 1; i > 0; i--) {
-            const j = Math.floor(Math.random() * (i + 1));
-            [array[i], array[j]] = [array[j], array[i]];
-        }
-        return array;
+    layoutMobileTiles() {
+        this.mobileContainer.innerHTML = '<button id="mobile-shuffle-btn" class="shuffle-btn">🎲</button>';
+        
+        this.projects.forEach((project, index) => {
+            const tile = this.createMobileTile(project, index);
+            this.mobileContainer.appendChild(tile);
+        });
+
+        this.showMobileProject(0);
+        this.bindMobileTileEvents();
+    }
+
+    createTile(project, index) {
+        const tile = document.createElement('div');
+        tile.className = 'tile';
+        tile.dataset.projectId = project.id;
+        
+        const content = document.createElement('div');
+        content.className = 'tile-content';
+        
+        const title = document.createElement('h2');
+        title.className = 'tile-title';
+        title.textContent = project.title;
+        
+        const excerpt = document.createElement('p');
+        excerpt.className = 'tile-excerpt';
+        excerpt.textContent = project.excerpt;
+        
+        const moreBtn = document.createElement('button');
+        moreBtn.className = 'tile-more-btn';
+        moreBtn.textContent = 'Подробнее';
+        
+        content.appendChild(title);
+        content.appendChild(excerpt);
+        content.appendChild(moreBtn);
+        tile.appendChild(content);
+        
+        return tile;
+    }
+
+    createMobileTile(project, index) {
+        const tile = document.createElement('div');
+        tile.className = 'tile mobile-tile';
+        tile.dataset.projectId = project.id;
+        tile.style.display = index === 0 ? 'flex' : 'none';
+        
+        const content = document.createElement('div');
+        content.className = 'tile-content';
+        
+        const title = document.createElement('h2');
+        title.className = 'tile-title';
+        title.textContent = project.title;
+        
+        const excerpt = document.createElement('p');
+        excerpt.className = 'tile-excerpt';
+        excerpt.textContent = project.excerpt;
+        
+        const moreBtn = document.createElement('button');
+        moreBtn.className = 'tile-more-btn';
+        moreBtn.textContent = 'Подробнее';
+        
+        content.appendChild(title);
+        content.appendChild(excerpt);
+        content.appendChild(moreBtn);
+        tile.appendChild(content);
+        
+        return tile;
+    }
+
+    positionTile(tile, rect, containerWidth, containerHeight) {
+        const padding = 8;
+        const width = Math.max(rect.width * containerWidth - padding * 2, 100);
+        const height = Math.max(rect.height * containerHeight - padding * 2, 100);
+        const x = rect.x * containerWidth + padding;
+        const y = rect.y * containerHeight + padding;
+        
+        tile.style.width = `${width}px`;
+        tile.style.height = `${height}px`;
+        tile.style.left = `${x}px`;
+        tile.style.top = `${y}px`;
+        
+        this.truncateText(tile, width, height);
     }
 
     truncateText(tile, width, height) {
         const title = tile.querySelector('.tile-title');
         const excerpt = tile.querySelector('.tile-excerpt');
         
-        if (!title || !excerpt) return;
+        if (title) {
+            title.style.setProperty('-webkit-line-clamp', 'none');
+        }
         
-        // Заголовок всегда показывается полностью
-        title.style.setProperty('-webkit-line-clamp', 'none');
-        
-        // Для описания рассчитываем количество строк в зависимости от размера блока
-        const availableHeight = height - 100; // Вычитаем место для заголовка и кнопки
-        const lineHeight = 20; // Примерная высота строки
-        const maxLines = Math.max(2, Math.floor(availableHeight / lineHeight));
-        
-        excerpt.style.setProperty('-webkit-line-clamp', maxLines);
-        
-        // Убираем программное обрезание - CSS сам обрежет текст
-    }
-
-    setContrast(tile, accentColor) {
-        // Простое определение контраста на основе яркости цвета
-        const rgb = this.hexToRgb(accentColor);
-        if (!rgb) return;
-
-        const brightness = (rgb.r * 299 + rgb.g * 587 + rgb.b * 114) / 1000;
-        const isLight = brightness > 128;
-
-        const content = tile.querySelector('.tile-content');
-        if (content) {
-            content.classList.toggle('text-light', !isLight);
-            content.classList.toggle('text-dark', isLight);
+        if (excerpt) {
+            const lineHeight = 20;
+            const titleHeight = 60;
+            const buttonHeight = 40;
+            const availableHeight = height - titleHeight - buttonHeight - 20;
+            const maxLines = Math.floor(availableHeight / lineHeight);
+            
+            excerpt.style.setProperty('-webkit-line-clamp', Math.max(1, maxLines));
         }
     }
 
-    hexToRgb(hex) {
-        const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-        return result ? {
-            r: parseInt(result[1], 16),
-            g: parseInt(result[2], 16),
-            b: parseInt(result[3], 16)
-        } : null;
-    }
-
-    setupModal() {
-        const modal = document.getElementById('project-modal');
-        const backdrop = modal?.querySelector('.modal-backdrop');
-        const closeBtn = modal?.querySelector('.modal-close');
-
-        // Клик по блоку
-        document.addEventListener('click', (e) => {
-            const tile = e.target.closest('.tile');
-            if (tile) {
-                this.openModal(tile);
-            }
+    bindTileEvents() {
+        document.getElementById('shuffle-btn').addEventListener('click', () => {
+            this.shuffleLayout();
         });
 
-        // Закрытие модалки
-        if (backdrop) {
-            backdrop.addEventListener('click', () => this.closeModal());
-        }
-        if (closeBtn) {
-            closeBtn.addEventListener('click', () => this.closeModal());
-        }
+        document.querySelectorAll('.tile-more-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const tile = e.target.closest('.tile');
+                const projectId = tile.dataset.projectId;
+                this.openModal(projectId);
+            });
+        });
     }
 
-    async openModal(tile) {
-        const slug = tile.dataset.slug;
-        if (!slug) return;
+    bindMobileTileEvents() {
+        document.getElementById('mobile-shuffle-btn').addEventListener('click', () => {
+            this.shuffleMobileLayout();
+        });
 
-        const modal = document.getElementById('project-modal');
-        const modalBody = modal.querySelector('.modal-body');
-
-        try {
-            const response = await fetch(`/p/${slug}/`);
-            const html = await response.text();
-            modalBody.innerHTML = html;
-            modal.classList.add('active');
-            document.body.style.overflow = 'hidden';
-        } catch (error) {
-            console.error('Ошибка загрузки проекта:', error);
-        }
+        document.querySelectorAll('.mobile-tile .tile-more-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const tile = e.target.closest('.tile');
+                const projectId = tile.dataset.projectId;
+                this.openModal(projectId);
+            });
+        });
     }
 
-    closeModal() {
-        const modal = document.getElementById('project-modal');
-        modal.classList.remove('active');
-        document.body.style.overflow = '';
+    showMobileProject(index) {
+        const tiles = this.mobileContainer.querySelectorAll('.mobile-tile');
+        tiles.forEach((tile, i) => {
+            tile.style.display = i === index ? 'flex' : 'none';
+        });
+        this.currentMobileIndex = index;
     }
 
+    nextMobileProject() {
+        const nextIndex = (this.currentMobileIndex + 1) % this.projects.length;
+        this.showMobileProject(nextIndex);
+    }
+
+    prevMobileProject() {
+        const prevIndex = this.currentMobileIndex === 0 ? this.projects.length - 1 : this.currentMobileIndex - 1;
+        this.showMobileProject(prevIndex);
+    }
 
     shuffleLayout() {
-        // Защита от множественных нажатий
         if (this.isShuffling) return;
         
         this.isShuffling = true;
+        this.seed = Math.random() * 1000000;
         
-        // Генерируем новый seed и перестраиваем раскладку без перезагрузки
-        const newSeed = Math.floor(Math.random() * 1000000);
-        
-        // Обновляем URL без перезагрузки
         const url = new URL(window.location);
-        url.searchParams.set('seed', newSeed);
-        window.history.pushState({}, '', url.toString());
+        url.searchParams.set('seed', this.seed);
+        window.history.pushState({}, '', url);
         
-        // Перестраиваем раскладку с новым seed
         this.layoutTiles();
         
-        // Сбрасываем флаг через небольшую задержку
+        setTimeout(() => {
+            this.isShuffling = false;
+        }, 1000);
+    }
+
+    shuffleMobileLayout() {
+        if (this.isShuffling) return;
+        
+        this.isShuffling = true;
+        this.currentMobileIndex = Math.floor(Math.random() * this.projects.length);
+        this.showMobileProject(this.currentMobileIndex);
+        
         setTimeout(() => {
             this.isShuffling = false;
         }, 500);
     }
+
+    openModal(projectId) {
+        const project = this.projects.find(p => p.id == projectId);
+        if (!project) return;
+
+        const modal = document.getElementById('project-modal');
+        const modalBody = document.getElementById('modal-body');
+        
+        modalBody.innerHTML = `
+            <h2>${project.title}</h2>
+            <p>${project.description}</p>
+            <p><strong>Дата создания:</strong> ${new Date(project.created_at).toLocaleDateString('ru-RU')}</p>
+        `;
+        
+        modal.style.display = 'block';
+    }
+
+    closeModal() {
+        document.getElementById('project-modal').style.display = 'none';
+    }
+
+    animateTilesAppearance() {
+        const tiles = this.container.querySelectorAll('.tile');
+        const indices = Array.from({length: tiles.length}, (_, i) => i);
+        
+        for (let i = indices.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [indices[i], indices[j]] = [indices[j], indices[i]];
+        }
+        
+        tiles.forEach((tile, index) => {
+            tile.style.opacity = '0';
+            tile.style.transform = 'scale(0.8)';
+            
+            setTimeout(() => {
+                tile.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+                tile.style.opacity = '1';
+                tile.style.transform = 'scale(1)';
+            }, index * 100);
+        });
+    }
 }
 
-// Инициализация приложения
+// Initialize the app when DOM is loaded
 document.addEventListener('DOMContentLoaded', () => {
-    try {
-        new WallApp();
-    } catch (error) {
-        console.error('Error initializing WallApp:', error);
-    }
+    new WallApp();
 });

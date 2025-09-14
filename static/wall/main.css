@@ -350,6 +350,98 @@ html, body {
     }
 }
 
+/* Mobile styles */
+@media (max-width: 768px) {
+    .wall-container {
+        overflow-x: auto;
+        overflow-y: hidden;
+        scroll-snap-type: x mandatory;
+        -webkit-overflow-scrolling: touch;
+    }
+    
+    .tile {
+        width: 100vw !important;
+        height: 100vh !important;
+        position: relative !important;
+        left: 0 !important;
+        top: 0 !important;
+        margin: 0 !important;
+        padding: 20px !important;
+        scroll-snap-align: start;
+        display: flex !important;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+    }
+    
+    .tile-content {
+        width: 100%;
+        height: 100%;
+        display: flex !important;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+    }
+    
+    .tile-title {
+        font-size: 2.5rem !important;
+        margin-bottom: 20px;
+        -webkit-line-clamp: none !important;
+    }
+    
+    .tile-excerpt {
+        font-size: 1.2rem !important;
+        line-height: 1.6;
+        margin-bottom: 30px;
+        -webkit-line-clamp: none !important;
+        max-height: 60vh;
+        overflow-y: auto;
+    }
+    
+    .tile-more-btn {
+        position: static !important;
+        margin-top: 20px;
+        padding: 15px 30px;
+        font-size: 1.1rem;
+    }
+    
+    .shuffle-btn {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 1000;
+        background: rgba(0, 0, 0, 0.8);
+        color: white;
+        border: none;
+        padding: 15px;
+        border-radius: 50%;
+        font-size: 1.2rem;
+        cursor: pointer;
+    }
+    
+    /* Hide desktop layout on mobile */
+    .wall-container.desktop-layout {
+        display: none;
+    }
+    
+    .wall-container.mobile-layout {
+        display: flex;
+        flex-direction: row;
+    }
+}
+
+@media (min-width: 769px) {
+    .wall-container.mobile-layout {
+        display: none;
+    }
+    
+    .wall-container.desktop-layout {
+        display: block;
+    }
+}
+
 /* Стили для печати */
 @media print {
     #pagination,

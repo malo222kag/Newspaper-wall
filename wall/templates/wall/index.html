@@ -5,38 +5,19 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Стенгазета проектов</title>
     {% load static %}
-    <link rel="stylesheet" href="{% static 'wall/main.css' %}?v=4">
+    <link rel="stylesheet" href="{% static 'wall/main.css' %}?v=5">
 </head>
 <body>
     <div id="wall-root">
-        <div id="wall-container">
-            {% for project in projects %}
-            <div class="tile" 
-                 data-project-id="{{ project.id }}"
-                 data-slug="{{ project.slug }}"
-                 data-accent-color="{{ project.accent_color }}"
-                 data-priority="{{ project.priority }}"
-                 data-title="{{ project.title }}"
-                 data-excerpt="{{ project.get_excerpt }}"
-                 data-cover-url="{% if project.cover %}{{ project.cover.url }}{% endif %}">
-                
-                {% if project.cover %}
-                <div class="tile-cover" style="background-image: url('{{ project.cover.url }}');"></div>
-                {% endif %}
-                
-                <div class="tile-content">
-                    <h2 class="tile-title">{{ project.title }}</h2>
-                    <p class="tile-excerpt">{{ project.get_excerpt }}</p>
-                    <button class="tile-more-btn" data-slug="{{ project.slug }}">Подробнее</button>
-                </div>
-                
-                <div class="tile-border"></div>
-            </div>
-            {% endfor %}
+        <!-- Desktop layout -->
+        <div id="wall-container" class="wall-container desktop-layout">
+            <button id="shuffle-btn" title="Перемешать раскладку">🎲</button>
         </div>
         
-        <!-- Кнопка перемешивания -->
-        <button id="shuffle-btn" title="Перемешать раскладку">🎲</button>
+        <!-- Mobile layout -->
+        <div id="mobile-wall-container" class="wall-container mobile-layout">
+            <button id="mobile-shuffle-btn" title="Перемешать раскладку">🎲</button>
+        </div>
     </div>
     
     <!-- Модалка проекта -->
@@ -50,7 +31,7 @@
         </div>
     </div>
     
-    <script src="{% static 'wall/layout.js' %}?v=4"></script>
+    <script src="{% static 'wall/layout.js' %}?v=5"></script>
     <script>
         // Передаем данные в JS
         window.wallData = {

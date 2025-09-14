@@ -689,6 +689,16 @@ class WallApp {
             this.positionTile(tile, rect);
             this.container.appendChild(tile);
         });
+        
+        // Настраиваем текст после добавления всех блоков в DOM
+        setTimeout(() => {
+            this.container.querySelectorAll('.tile').forEach(tile => {
+                const excerptElement = tile.querySelector('.tile-excerpt');
+                if (excerptElement) {
+                    this.adjustTextToBlockSize(excerptElement, tile);
+                }
+            });
+        }, 100);
 
         this.bindTileEvents();
         this.animateTilesAppearance();
@@ -711,6 +721,31 @@ class WallApp {
         this.createMobileIndicators();
         this.showMobileProject(0);
         this.bindMobileTileEvents();
+    }
+
+    adjustTextToBlockSize(excerptElement, tileElement) {
+        // Получаем размеры блока
+        const tileRect = tileElement.getBoundingClientRect();
+        const tileHeight = tileRect.height;
+        
+        // Вычисляем доступную высоту для текста
+        // Учитываем отступы, заголовок и кнопку
+        const padding = 20; // 0.5rem * 2 = 20px
+        const titleHeight = 30; // примерная высота заголовка
+        const buttonHeight = 40; // примерная высота кнопки
+        const availableHeight = tileHeight - padding - titleHeight - buttonHeight;
+        
+        // Вычисляем количество строк на основе доступной высоты
+        const lineHeight = 14; // 0.9rem * 1.4 = 14px
+        const maxLines = Math.max(1, Math.floor(availableHeight / lineHeight));
+        
+        // Устанавливаем количество строк
+        excerptElement.style.webkitLineClamp = maxLines.toString();
+        
+        // Если текст не помещается, добавляем многоточие
+        if (excerptElement.scrollHeight > availableHeight) {
+            excerptElement.style.textOverflow = 'ellipsis';
+        }
     }
 
     createTile(project, index) {
@@ -765,8 +800,8 @@ class WallApp {
         excerpt.style.overflow = 'hidden';
         excerpt.style.textOverflow = 'ellipsis';
         excerpt.style.display = '-webkit-box';
-        excerpt.style.webkitLineClamp = '4';
         excerpt.style.webkitBoxOrient = 'vertical';
+        
         
         const moreBtn = document.createElement('button');
         moreBtn.className = 'tile-more-btn';

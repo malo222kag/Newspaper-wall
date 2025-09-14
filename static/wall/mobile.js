@@ -35,11 +35,18 @@ class MobileApp {
             });
         });
 
-        // Кнопки "Подробнее"
+        // Кнопки "Подробнее" и слайды
         document.addEventListener('click', (e) => {
             if (e.target.classList.contains('mobile-slide-btn')) {
+                e.stopPropagation();
                 const slug = e.target.dataset.slug;
                 this.openModal(slug);
+            } else if (e.target.closest('.mobile-slide')) {
+                const slide = e.target.closest('.mobile-slide');
+                const slug = slide.dataset.slug;
+                if (slug) {
+                    this.openModal(slug);
+                }
             }
         });
 
@@ -254,11 +261,14 @@ class MobileApp {
     }
 
     async openModal(slug) {
+        console.log('Opening mobile modal for slug:', slug);
         const modal = document.getElementById('project-modal');
         const modalBody = modal.querySelector('.modal-body');
         
         // Показываем базовую информацию о проекте
         const project = this.projects.find(p => p.slug === slug);
+        console.log('Found mobile project:', project);
+        
         if (project) {
             modalBody.innerHTML = `
                 <div class="project-detail">
@@ -273,6 +283,9 @@ class MobileApp {
             `;
             modal.classList.add('active');
             document.body.style.overflow = 'hidden';
+            console.log('Mobile modal opened successfully');
+        } else {
+            console.error('Mobile project not found for slug:', slug);
         }
     }
 

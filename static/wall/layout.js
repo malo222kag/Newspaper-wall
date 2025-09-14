@@ -120,12 +120,18 @@ class WallApp {
             }
         });
 
-        // Обработчик клика по кнопкам "Подробнее"
+        // Обработчик клика по кнопкам "Подробнее" и блокам
         document.addEventListener('click', (e) => {
             if (e.target.classList.contains('tile-more-btn')) {
                 e.stopPropagation();
                 const slug = e.target.dataset.slug;
                 this.openModal(slug);
+            } else if (e.target.closest('.tile')) {
+                const tile = e.target.closest('.tile');
+                const slug = tile.dataset.slug;
+                if (slug) {
+                    this.openModal(slug);
+                }
             }
         });
     }
@@ -271,25 +277,11 @@ class WallApp {
     }
 
     bindTileEvents() {
-        document.querySelectorAll('.tile-more-btn').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                const tile = e.target.closest('.tile');
-                const slug = tile.dataset.slug;
-                this.openModal(slug);
-            });
-        });
+        // Обработчики уже привязаны в bindEvents()
     }
 
     bindMobileTileEvents() {
-        document.querySelectorAll('.mobile-tile .tile-more-btn').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                const tile = e.target.closest('.tile');
-                const slug = tile.dataset.slug;
-                this.openModal(slug);
-            });
-        });
+        // Обработчики уже привязаны в bindEvents()
     }
 
     createMobileIndicators() {
@@ -354,8 +346,14 @@ class WallApp {
     }
 
     async openModal(slug) {
+        console.log('Opening modal for slug:', slug);
         const project = this.projects.find(p => p.slug === slug);
-        if (!project) return;
+        console.log('Found project:', project);
+        
+        if (!project) {
+            console.error('Project not found for slug:', slug);
+            return;
+        }
 
         const modal = document.getElementById('project-modal');
         const modalBody = modal.querySelector('.modal-body');
@@ -374,6 +372,7 @@ class WallApp {
         
         modal.classList.add('active');
         document.body.style.overflow = 'hidden';
+        console.log('Modal opened successfully');
     }
 
     closeModal() {

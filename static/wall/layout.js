@@ -1,74 +1,61 @@
-class RandomLayoutGenerator {
+class AdaptiveLayoutGenerator {
     constructor(containerWidth, containerHeight) {
         this.containerWidth = containerWidth;
         this.containerHeight = containerHeight;
-        this.minWidth = 200;
-        this.minHeight = 150;
-        this.maxWidth = 400;
-        this.maxHeight = 300;
         this.padding = 20;
     }
 
     generateLayout(projects) {
-        const rectangles = [];
-        const usedPositions = [];
+        if (projects.length === 0) return [];
         
         // Перемешиваем проекты
         const shuffledProjects = this.shuffleArray([...projects]);
         
+        // Рассчитываем размеры блоков в зависимости от количества
+        const { rows, cols } = this.calculateGridDimensions(projects.length);
+        const blockWidth = (this.containerWidth - this.padding * (cols + 1)) / cols;
+        const blockHeight = (this.containerHeight - this.padding * (rows + 1)) / rows;
+        
+        const rectangles = [];
+        
         for (let i = 0; i < shuffledProjects.length; i++) {
-            const project = shuffledProjects[i];
-            const rect = this.findRandomPosition(usedPositions);
+            const row = Math.floor(i / cols);
+            const col = i % cols;
+            
+            // Добавляем случайное смещение для более интересного вида
+            const randomOffsetX = (Math.random() - 0.5) * this.padding;
+            const randomOffsetY = (Math.random() - 0.5) * this.padding;
+            
+            const x = this.padding + col * (blockWidth + this.padding) + randomOffsetX;
+            const y = this.padding + row * (blockHeight + this.padding) + randomOffsetY;
+            
             rectangles.push({
-                project: project,
-                x: rect.x,
-                y: rect.y,
-                width: rect.width,
-                height: rect.height
+                project: shuffledProjects[i],
+                x: Math.max(0, x),
+                y: Math.max(0, y),
+                width: blockWidth,
+                height: blockHeight
             });
-            usedPositions.push(rect);
         }
         
         return rectangles;
     }
 
-    findRandomPosition(usedPositions) {
-        let attempts = 0;
-        const maxAttempts = 100;
+    calculateGridDimensions(count) {
+        if (count === 1) return { rows: 1, cols: 1 };
+        if (count === 2) return { rows: 1, cols: 2 };
+        if (count === 3) return { rows: 2, cols: 2 };
+        if (count === 4) return { rows: 2, cols: 2 };
+        if (count === 5) return { rows: 2, cols: 3 };
+        if (count === 6) return { rows: 2, cols: 3 };
+        if (count === 7) return { rows: 3, cols: 3 };
+        if (count === 8) return { rows: 3, cols: 3 };
+        if (count === 9) return { rows: 3, cols: 3 };
         
-        while (attempts < maxAttempts) {
-            const width = this.minWidth + Math.random() * (this.maxWidth - this.minWidth);
-            const height = this.minHeight + Math.random() * (this.maxHeight - this.minHeight);
-            const x = Math.random() * (this.containerWidth - width);
-            const y = Math.random() * (this.containerHeight - height);
-            
-            const newRect = { x, y, width, height };
-            
-            if (!this.overlapsWithAny(newRect, usedPositions)) {
-                return newRect;
-            }
-            
-            attempts++;
-        }
-        
-        // Если не удалось найти место, размещаем в случайном месте
-        const width = this.minWidth + Math.random() * (this.maxWidth - this.minWidth);
-        const height = this.minHeight + Math.random() * (this.maxHeight - this.minHeight);
-        const x = Math.random() * Math.max(0, this.containerWidth - width);
-        const y = Math.random() * Math.max(0, this.containerHeight - height);
-        
-        return { x, y, width, height };
-    }
-
-    overlapsWithAny(newRect, usedPositions) {
-        return usedPositions.some(rect => this.overlaps(newRect, rect));
-    }
-
-    overlaps(rect1, rect2) {
-        return !(rect1.x + rect1.width < rect2.x || 
-                rect2.x + rect2.width < rect1.x || 
-                rect1.y + rect1.height < rect2.y || 
-                rect2.y + rect2.height < rect1.y);
+        // Для большего количества проектов
+        const cols = Math.ceil(Math.sqrt(count));
+        const rows = Math.ceil(count / cols);
+        return { rows, cols };
     }
 
     shuffleArray(array) {
@@ -153,7 +140,7 @@ class WallApp {
         const containerWidth = this.container.offsetWidth;
         const containerHeight = this.container.offsetHeight;
         
-        const generator = new RandomLayoutGenerator(containerWidth, containerHeight);
+        const generator = new AdaptiveLayoutGenerator(containerWidth, containerHeight);
         const rectangles = generator.generateLayout(this.projects);
         
         this.container.innerHTML = '';

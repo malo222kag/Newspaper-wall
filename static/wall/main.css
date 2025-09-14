@@ -97,7 +97,7 @@ html, body {
     overflow: hidden;
     text-overflow: ellipsis;
     display: -webkit-box;
-    -webkit-line-clamp: 6; /* Максимум 6 строк */
+    -webkit-line-clamp: 20; /* Увеличиваем до 20 строк */
     -webkit-box-orient: vertical;
 }
 

@@ -730,14 +730,14 @@ class WallApp {
         
         // Вычисляем доступную высоту для текста
         // Учитываем отступы, заголовок и кнопку
-        const padding = 20; // 0.5rem * 2 = 20px
-        const titleHeight = 30; // примерная высота заголовка
-        const buttonHeight = 40; // примерная высота кнопки
+        const padding = 32; // 1rem * 2 = 32px (padding блока)
+        const titleHeight = 50; // увеличиваем высоту заголовка
+        const buttonHeight = 50; // увеличиваем высоту кнопки
         const availableHeight = tileHeight - padding - titleHeight - buttonHeight;
         
         // Вычисляем количество строк на основе доступной высоты
-        const lineHeight = 14; // 0.9rem * 1.4 = 14px
-        const maxLines = Math.max(1, Math.floor(availableHeight / lineHeight));
+        const lineHeight = 20; // увеличиваем высоту строки
+        const maxLines = Math.max(3, Math.floor(availableHeight / lineHeight)); // минимум 3 строки
         
         // Устанавливаем количество строк
         excerptElement.style.webkitLineClamp = maxLines.toString();

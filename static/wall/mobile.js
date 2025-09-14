@@ -1,7 +1,7 @@
 class MobileApp {
     constructor() {
         this.currentIndex = 0;
-        this.projects = window.mobileData.projects;
+        this.projects = this.shuffleArray([...window.mobileData.projects]);
         this.totalSlides = this.projects.length;
         this.isAnimating = false;
         this.touchStartX = 0;
@@ -19,11 +19,6 @@ class MobileApp {
     }
 
     bindEvents() {
-        // Кнопка перемешивания
-        document.getElementById('mobile-shuffle-btn').addEventListener('click', () => {
-            this.shuffleProjects();
-        });
-
         // Навигационные кнопки
         document.getElementById('prev-btn').addEventListener('click', () => {
             this.prevSlide();
@@ -171,23 +166,13 @@ class MobileApp {
         });
     }
 
-    shuffleProjects() {
-        if (this.isAnimating) return;
-        
-        // Перемешиваем массив проектов
-        const shuffled = [...this.projects];
+    shuffleArray(array) {
+        const shuffled = [...array];
         for (let i = shuffled.length - 1; i > 0; i--) {
             const j = Math.floor(Math.random() * (i + 1));
             [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
         }
-        
-        this.projects = shuffled;
-        
-        // Пересоздаем слайды
-        this.recreateSlides();
-        
-        // Переходим к первому слайду
-        this.goToSlide(0);
+        return shuffled;
     }
 
     recreateSlides() {
@@ -272,25 +257,22 @@ class MobileApp {
         const modal = document.getElementById('project-modal');
         const modalBody = modal.querySelector('.modal-body');
         
-        try {
-            const response = await fetch(`/p/${slug}/`);
-            const html = await response.text();
-            modalBody.innerHTML = html;
+        // Показываем базовую информацию о проекте
+        const project = this.projects.find(p => p.slug === slug);
+        if (project) {
+            modalBody.innerHTML = `
+                <div class="project-detail">
+                    <h2 class="project-title">${project.title}</h2>
+                    <div class="project-meta">
+                        <p><strong>Дата создания:</strong> ${project.created_at}</p>
+                    </div>
+                    <div class="project-content">
+                        <p class="project-description">${project.description}</p>
+                    </div>
+                </div>
+            `;
             modal.classList.add('active');
             document.body.style.overflow = 'hidden';
-        } catch (error) {
-            console.error('Ошибка загрузки проекта:', error);
-            // Показываем базовую информацию о проекте
-            const project = this.projects.find(p => p.slug === slug);
-            if (project) {
-                modalBody.innerHTML = `
-                    <h2>${project.title}</h2>
-                    <p><strong>Описание:</strong> ${project.description}</p>
-                    <p><strong>Дата создания:</strong> ${project.created_at}</p>
-                `;
-                modal.classList.add('active');
-                document.body.style.overflow = 'hidden';
-            }
         }
     }
 

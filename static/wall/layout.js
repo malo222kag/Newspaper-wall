@@ -1,46 +1,83 @@
-class LayoutGenerator {
+class RandomLayoutGenerator {
     constructor(containerWidth, containerHeight) {
         this.containerWidth = containerWidth;
         this.containerHeight = containerHeight;
-        this.minWidth = 0.18;
-        this.minHeight = 0.15;
+        this.minWidth = 200;
+        this.minHeight = 150;
+        this.maxWidth = 400;
+        this.maxHeight = 300;
+        this.padding = 20;
     }
 
-    generateLayout(projects, seed) {
-        const random = new SeededRandom(seed);
+    generateLayout(projects) {
         const rectangles = [];
+        const usedPositions = [];
         
-        for (let i = 0; i < projects.length; i++) {
-            const project = projects[i];
-            const rect = this.createRectangle(project, random);
-            rectangles.push(rect);
+        // Перемешиваем проекты
+        const shuffledProjects = this.shuffleArray([...projects]);
+        
+        for (let i = 0; i < shuffledProjects.length; i++) {
+            const project = shuffledProjects[i];
+            const rect = this.findRandomPosition(usedPositions);
+            rectangles.push({
+                project: project,
+                x: rect.x,
+                y: rect.y,
+                width: rect.width,
+                height: rect.height
+            });
+            usedPositions.push(rect);
         }
         
         return rectangles;
     }
 
-    createRectangle(project, random) {
-        const width = this.minWidth + random.next() * (1 - this.minWidth);
-        const height = this.minHeight + random.next() * (1 - this.minHeight);
+    findRandomPosition(usedPositions) {
+        let attempts = 0;
+        const maxAttempts = 100;
         
-        return {
-            project: project,
-            width: width,
-            height: height,
-            x: 0,
-            y: 0
-        };
+        while (attempts < maxAttempts) {
+            const width = this.minWidth + Math.random() * (this.maxWidth - this.minWidth);
+            const height = this.minHeight + Math.random() * (this.maxHeight - this.minHeight);
+            const x = Math.random() * (this.containerWidth - width);
+            const y = Math.random() * (this.containerHeight - height);
+            
+            const newRect = { x, y, width, height };
+            
+            if (!this.overlapsWithAny(newRect, usedPositions)) {
+                return newRect;
+            }
+            
+            attempts++;
+        }
+        
+        // Если не удалось найти место, размещаем в случайном месте
+        const width = this.minWidth + Math.random() * (this.maxWidth - this.minWidth);
+        const height = this.minHeight + Math.random() * (this.maxHeight - this.minHeight);
+        const x = Math.random() * Math.max(0, this.containerWidth - width);
+        const y = Math.random() * Math.max(0, this.containerHeight - height);
+        
+        return { x, y, width, height };
     }
-}
 
-class SeededRandom {
-    constructor(seed) {
-        this.seed = seed;
+    overlapsWithAny(newRect, usedPositions) {
+        return usedPositions.some(rect => this.overlaps(newRect, rect));
     }
 
-    next() {
-        this.seed = (this.seed * 9301 + 49297) % 233280;
-        return this.seed / 233280;
+    overlaps(rect1, rect2) {
+        return !(rect1.x + rect1.width < rect2.x || 
+                rect2.x + rect2.width < rect1.x || 
+                rect1.y + rect1.height < rect2.y || 
+                rect2.y + rect2.height < rect1.y);
+    }
+
+    shuffleArray(array) {
+        const shuffled = [...array];
+        for (let i = shuffled.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+        }
+        return shuffled;
     }
 }
 
@@ -50,8 +87,8 @@ class WallApp {
         this.mobileContainer = document.getElementById('mobile-wall-container');
         this.projects = window.wallData.projects;
         this.seed = window.wallData.seed;
-        this.isShuffling = false;
-        this.currentMobileIndex = 0;
+        this.isResizing = false;
+        this.resizeTimeout = null;
         
         this.init();
     }
@@ -59,84 +96,37 @@ class WallApp {
     init() {
         this.bindEvents();
         this.layoutTiles();
+        this.setupModal();
     }
 
     bindEvents() {
-        // Desktop shuffle button
-        document.getElementById('shuffle-btn').addEventListener('click', () => {
-            this.shuffleLayout();
+        // Обработка ресайза с debounce
+        window.addEventListener('resize', () => {
+            if (this.isResizing) return;
+            
+            this.isResizing = true;
+            clearTimeout(this.resizeTimeout);
+            
+            this.resizeTimeout = setTimeout(() => {
+                this.layoutTiles();
+                this.isResizing = false;
+            }, 100);
         });
 
-        // Mobile shuffle button
-        document.getElementById('mobile-shuffle-btn').addEventListener('click', () => {
-            this.shuffleMobileLayout();
-        });
-
-        // Modal events
-        document.querySelector('.close').addEventListener('click', () => {
-            this.closeModal();
-        });
-
-        document.getElementById('project-modal').addEventListener('click', (e) => {
-            if (e.target.id === 'project-modal') {
+        // Клавиатурная навигация
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
                 this.closeModal();
             }
         });
 
-        // Mobile touch events
-        this.setupMobileTouchEvents();
-
-        // Window resize
-        window.addEventListener('resize', () => {
-            clearTimeout(this.resizeTimeout);
-            this.resizeTimeout = setTimeout(() => {
-                this.layoutTiles();
-            }, 250);
-        });
-    }
-
-    setupMobileTouchEvents() {
-        let startX = 0;
-        let startY = 0;
-        let isScrolling = false;
-
-        this.mobileContainer.addEventListener('touchstart', (e) => {
-            startX = e.touches[0].clientX;
-            startY = e.touches[0].clientY;
-            isScrolling = false;
-        });
-
-        this.mobileContainer.addEventListener('touchmove', (e) => {
-            if (!startX || !startY) return;
-
-            const currentX = e.touches[0].clientX;
-            const currentY = e.touches[0].clientY;
-            const diffX = Math.abs(currentX - startX);
-            const diffY = Math.abs(currentY - startY);
-
-            if (diffX > diffY) {
-                isScrolling = true;
-                e.preventDefault();
+        // Обработчик клика по кнопкам "Подробнее"
+        document.addEventListener('click', (e) => {
+            if (e.target.classList.contains('tile-more-btn')) {
+                e.stopPropagation();
+                const slug = e.target.dataset.slug;
+                this.openModal(slug);
             }
-        });
-
-        this.mobileContainer.addEventListener('touchend', (e) => {
-            if (!isScrolling) return;
-
-            const endX = e.changedTouches[0].clientX;
-            const diffX = startX - endX;
-
-            if (Math.abs(diffX) > 50) {
-                if (diffX > 0) {
-                    this.nextMobileProject();
-                } else {
-                    this.prevMobileProject();
-                }
-            }
-
-            startX = 0;
-            startY = 0;
-            isScrolling = false;
         });
     }
 
@@ -157,28 +147,31 @@ class WallApp {
         const containerWidth = this.container.offsetWidth;
         const containerHeight = this.container.offsetHeight;
         
-        const generator = new LayoutGenerator(containerWidth, containerHeight);
-        const rectangles = generator.generateLayout(this.projects, this.seed);
+        const generator = new RandomLayoutGenerator(containerWidth, containerHeight);
+        const rectangles = generator.generateLayout(this.projects);
         
-        this.container.innerHTML = '<button id="shuffle-btn" class="shuffle-btn">🎲</button>';
+        this.container.innerHTML = '';
         
         rectangles.forEach((rect, index) => {
             const tile = this.createTile(rect.project, index);
-            this.positionTile(tile, rect, containerWidth, containerHeight);
+            this.positionTile(tile, rect);
             this.container.appendChild(tile);
         });
 
         this.bindTileEvents();
+        this.animateTilesAppearance();
     }
 
     layoutMobileTiles() {
         this.mobileContainer.style.display = 'flex';
         this.mobileContainer.innerHTML = `
-            <button id="mobile-shuffle-btn" class="shuffle-btn">🎲</button>
             <div class="mobile-indicators"></div>
         `;
         
-        this.projects.forEach((project, index) => {
+        // Перемешиваем проекты для мобильной версии
+        const shuffledProjects = this.shuffleArray([...this.projects]);
+        
+        shuffledProjects.forEach((project, index) => {
             const tile = this.createMobileTile(project, index);
             this.mobileContainer.appendChild(tile);
         });
@@ -188,25 +181,11 @@ class WallApp {
         this.bindMobileTileEvents();
     }
 
-    createMobileIndicators() {
-        const indicatorsContainer = this.mobileContainer.querySelector('.mobile-indicators');
-        indicatorsContainer.innerHTML = '';
-        
-        this.projects.forEach((_, index) => {
-            const indicator = document.createElement('div');
-            indicator.className = 'mobile-indicator';
-            indicator.dataset.index = index;
-            indicator.addEventListener('click', () => {
-                this.showMobileProject(index);
-            });
-            indicatorsContainer.appendChild(indicator);
-        });
-    }
-
     createTile(project, index) {
         const tile = document.createElement('div');
         tile.className = 'tile';
         tile.dataset.projectId = project.id;
+        tile.dataset.slug = project.slug;
         
         const content = document.createElement('div');
         content.className = 'tile-content';
@@ -222,6 +201,7 @@ class WallApp {
         const moreBtn = document.createElement('button');
         moreBtn.className = 'tile-more-btn';
         moreBtn.textContent = 'Подробнее';
+        moreBtn.dataset.slug = project.slug;
         
         content.appendChild(title);
         content.appendChild(excerpt);
@@ -235,6 +215,7 @@ class WallApp {
         const tile = document.createElement('div');
         tile.className = 'tile mobile-tile';
         tile.dataset.projectId = project.id;
+        tile.dataset.slug = project.slug;
         tile.style.display = index === 0 ? 'flex' : 'none';
         
         const content = document.createElement('div');
@@ -251,6 +232,7 @@ class WallApp {
         const moreBtn = document.createElement('button');
         moreBtn.className = 'tile-more-btn';
         moreBtn.textContent = 'Подробнее';
+        moreBtn.dataset.slug = project.slug;
         
         content.appendChild(title);
         content.appendChild(excerpt);
@@ -260,19 +242,13 @@ class WallApp {
         return tile;
     }
 
-    positionTile(tile, rect, containerWidth, containerHeight) {
-        const padding = 8;
-        const width = Math.max(rect.width * containerWidth - padding * 2, 100);
-        const height = Math.max(rect.height * containerHeight - padding * 2, 100);
-        const x = rect.x * containerWidth + padding;
-        const y = rect.y * containerHeight + padding;
+    positionTile(tile, rect) {
+        tile.style.width = `${rect.width}px`;
+        tile.style.height = `${rect.height}px`;
+        tile.style.left = `${rect.x}px`;
+        tile.style.top = `${rect.y}px`;
         
-        tile.style.width = `${width}px`;
-        tile.style.height = `${height}px`;
-        tile.style.left = `${x}px`;
-        tile.style.top = `${y}px`;
-        
-        this.truncateText(tile, width, height);
+        this.truncateText(tile, rect.width, rect.height);
     }
 
     truncateText(tile, width, height) {
@@ -295,32 +271,39 @@ class WallApp {
     }
 
     bindTileEvents() {
-        document.getElementById('shuffle-btn').addEventListener('click', () => {
-            this.shuffleLayout();
-        });
-
         document.querySelectorAll('.tile-more-btn').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 e.stopPropagation();
                 const tile = e.target.closest('.tile');
-                const projectId = tile.dataset.projectId;
-                this.openModal(projectId);
+                const slug = tile.dataset.slug;
+                this.openModal(slug);
             });
         });
     }
 
     bindMobileTileEvents() {
-        document.getElementById('mobile-shuffle-btn').addEventListener('click', () => {
-            this.shuffleMobileLayout();
-        });
-
         document.querySelectorAll('.mobile-tile .tile-more-btn').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 e.stopPropagation();
                 const tile = e.target.closest('.tile');
-                const projectId = tile.dataset.projectId;
-                this.openModal(projectId);
+                const slug = tile.dataset.slug;
+                this.openModal(slug);
             });
+        });
+    }
+
+    createMobileIndicators() {
+        const indicatorsContainer = this.mobileContainer.querySelector('.mobile-indicators');
+        indicatorsContainer.innerHTML = '';
+        
+        this.projects.forEach((_, index) => {
+            const indicator = document.createElement('div');
+            indicator.className = 'mobile-indicator';
+            indicator.dataset.index = index;
+            indicator.addEventListener('click', () => {
+                this.showMobileProject(index);
+            });
+            indicatorsContainer.appendChild(indicator);
         });
     }
 
@@ -347,69 +330,63 @@ class WallApp {
         this.currentMobileIndex = index;
     }
 
-    nextMobileProject() {
-        const nextIndex = (this.currentMobileIndex + 1) % this.projects.length;
-        this.showMobileProject(nextIndex);
+    shuffleArray(array) {
+        const shuffled = [...array];
+        for (let i = shuffled.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+        }
+        return shuffled;
     }
 
-    prevMobileProject() {
-        const prevIndex = this.currentMobileIndex === 0 ? this.projects.length - 1 : this.currentMobileIndex - 1;
-        this.showMobileProject(prevIndex);
+    setupModal() {
+        const modal = document.getElementById('project-modal');
+        const backdrop = modal?.querySelector('.modal-backdrop');
+        const closeBtn = modal?.querySelector('.modal-close');
+
+        // Закрытие модалки
+        if (backdrop) {
+            backdrop.addEventListener('click', () => this.closeModal());
+        }
+        if (closeBtn) {
+            closeBtn.addEventListener('click', () => this.closeModal());
+        }
     }
 
-    shuffleLayout() {
-        if (this.isShuffling) return;
-        
-        this.isShuffling = true;
-        this.seed = Math.random() * 1000000;
-        
-        const url = new URL(window.location);
-        url.searchParams.set('seed', this.seed);
-        window.history.pushState({}, '', url);
-        
-        this.layoutTiles();
-        
-        setTimeout(() => {
-            this.isShuffling = false;
-        }, 1000);
-    }
-
-    shuffleMobileLayout() {
-        if (this.isShuffling) return;
-        
-        this.isShuffling = true;
-        this.currentMobileIndex = Math.floor(Math.random() * this.projects.length);
-        this.showMobileProject(this.currentMobileIndex);
-        
-        setTimeout(() => {
-            this.isShuffling = false;
-        }, 500);
-    }
-
-    openModal(projectId) {
-        const project = this.projects.find(p => p.id == projectId);
+    async openModal(slug) {
+        const project = this.projects.find(p => p.slug === slug);
         if (!project) return;
 
         const modal = document.getElementById('project-modal');
-        const modalBody = document.getElementById('modal-body');
+        const modalBody = modal.querySelector('.modal-body');
         
         modalBody.innerHTML = `
-            <h2>${project.title}</h2>
-            <p>${project.description}</p>
-            <p><strong>Дата создания:</strong> ${new Date(project.created_at).toLocaleDateString('ru-RU')}</p>
+            <div class="project-detail">
+                <h2 class="project-title">${project.title}</h2>
+                <div class="project-meta">
+                    <p><strong>Дата создания:</strong> ${project.created_at}</p>
+                </div>
+                <div class="project-content">
+                    <p class="project-description">${project.description}</p>
+                </div>
+            </div>
         `;
         
-        modal.style.display = 'block';
+        modal.classList.add('active');
+        document.body.style.overflow = 'hidden';
     }
 
     closeModal() {
-        document.getElementById('project-modal').style.display = 'none';
+        const modal = document.getElementById('project-modal');
+        modal.classList.remove('active');
+        document.body.style.overflow = '';
     }
 
     animateTilesAppearance() {
         const tiles = this.container.querySelectorAll('.tile');
         const indices = Array.from({length: tiles.length}, (_, i) => i);
         
+        // Перемешиваем индексы для случайной анимации
         for (let i = indices.length - 1; i > 0; i--) {
             const j = Math.floor(Math.random() * (i + 1));
             [indices[i], indices[j]] = [indices[j], indices[i]];
@@ -428,7 +405,11 @@ class WallApp {
     }
 }
 
-// Initialize the app when DOM is loaded
+// Инициализация приложения
 document.addEventListener('DOMContentLoaded', () => {
-    new WallApp();
+    try {
+        new WallApp();
+    } catch (error) {
+        console.error('Error initializing WallApp:', error);
+    }
 });

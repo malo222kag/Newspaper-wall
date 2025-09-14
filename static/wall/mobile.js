@@ -50,6 +50,20 @@ class MobileApp {
             }
         });
 
+        // Дополнительный обработчик для слайдов
+        document.querySelectorAll('.mobile-slide').forEach(slide => {
+            slide.addEventListener('click', (e) => {
+                // Не открываем модалку, если кликнули по кнопке
+                if (e.target.classList.contains('mobile-slide-btn')) {
+                    return;
+                }
+                const slug = slide.dataset.slug;
+                if (slug) {
+                    this.openModal(slug);
+                }
+            });
+        });
+
         // События касания
         this.setupTouchEvents();
 
@@ -77,7 +91,13 @@ class MobileApp {
         });
 
         carousel.addEventListener('touchmove', (e) => {
-            e.preventDefault(); // Предотвращаем скролл страницы
+            // Предотвращаем скролл только при горизонтальном свайпе
+            const deltaX = Math.abs(e.touches[0].clientX - this.touchStartX);
+            const deltaY = Math.abs(e.touches[0].clientY - this.touchStartY);
+            
+            if (deltaX > deltaY && deltaX > 10) {
+                e.preventDefault(); // Предотвращаем скролл страницы только при горизонтальном свайпе
+            }
         });
 
         carousel.addEventListener('touchend', (e) => {

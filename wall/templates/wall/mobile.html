@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Стенгазета проектов</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'wall/mobile.css' %}?v=1">
+</head>
+<body>
+    <div id="mobile-app">
+        <!-- Заголовок -->
+        <header class="mobile-header">
+            <h1>Проекты</h1>
+            <button id="mobile-shuffle-btn" class="shuffle-btn">🎲</button>
+        </header>
+
+        <!-- Основной контент -->
+        <main class="mobile-content">
+            <div id="mobile-carousel" class="mobile-carousel">
+                {% for project in projects %}
+                <div class="mobile-slide" data-project-id="{{ project.id }}" data-slug="{{ project.slug }}">
+                    <div class="mobile-slide-content">
+                        {% if project.cover %}
+                        <div class="mobile-slide-cover" style="background-image: url('{{ project.cover.url }}');"></div>
+                        {% endif %}
+                        
+                        <div class="mobile-slide-text">
+                            <h2 class="mobile-slide-title">{{ project.title }}</h2>
+                            <p class="mobile-slide-excerpt">{{ project.get_excerpt }}</p>
+                            <button class="mobile-slide-btn" data-slug="{{ project.slug }}">Подробнее</button>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </main>
+
+        <!-- Индикаторы -->
+        <nav class="mobile-indicators">
+            {% for project in projects %}
+            <button class="mobile-indicator" data-index="{{ forloop.counter0 }}"></button>
+            {% endfor %}
+        </nav>
+
+        <!-- Навигация -->
+        <div class="mobile-nav">
+            <button id="prev-btn" class="nav-btn">‹</button>
+            <span id="slide-counter" class="slide-counter">1 / {{ projects|length }}</span>
+            <button id="next-btn" class="nav-btn">›</button>
+        </div>
+    </div>
+
+    <!-- Модалка проекта -->
+    <div id="project-modal" class="modal">
+        <div class="modal-backdrop"></div>
+        <div class="modal-content">
+            <button class="modal-close">&times;</button>
+            <div class="modal-body">
+                <!-- Контент загружается динамически -->
+            </div>
+        </div>
+    </div>
+
+    <script src="{% static 'wall/mobile.js' %}?v=1"></script>
+    <script>
+        // Передаем данные в JS
+        window.mobileData = {
+            projects: [
+                {% for project in projects %}
+                {
+                    id: {{ project.id }},
+                    title: "{{ project.title|escapejs }}",
+                    slug: "{{ project.slug }}",
+                    excerpt: "{{ project.get_excerpt|escapejs }}",
+                    description: "{{ project.description|escapejs }}",
+                    accent_color: "{{ project.accent_color }}",
+                    priority: {{ project.priority }},
+                    cover_url: "{% if project.cover %}{{ project.cover.url }}{% endif %}",
+                    created_at: "{{ project.created_at|date:'Y-m-d' }}"
+                }{% if not forloop.last %},{% endif %}
+                {% endfor %}
+            ],
+            seed: "{{ seed }}"
+        };
+    </script>
+</body>
+</html>

@@ -3,6 +3,17 @@ from django.http import JsonResponse
 from django.core.paginator import Paginator
 from django.db.models import Q
 from .models import Project
+import re
+
+
+def is_mobile_device(request):
+    """Определяет, является ли устройство мобильным"""
+    user_agent = request.META.get('HTTP_USER_AGENT', '').lower()
+    mobile_patterns = [
+        'mobile', 'android', 'iphone', 'ipad', 'ipod', 
+        'blackberry', 'windows phone', 'opera mini', 'iemobile'
+    ]
+    return any(pattern in user_agent for pattern in mobile_patterns)
 
 
 def index(request):
@@ -12,11 +23,18 @@ def index(request):
     # Получаем seed для генерации раскладки
     seed = request.GET.get('seed', '')
     
+    # Определяем тип устройства
+    is_mobile = is_mobile_device(request)
+    
     context = {
         'projects': projects,
         'seed': seed,
+        'is_mobile': is_mobile,
     }
-    return render(request, 'wall/index.html', context)
+    
+    # Выбираем шаблон в зависимости от устройства
+    template = 'wall/mobile.html' if is_mobile else 'wall/index.html'
+    return render(request, template, context)
 
 
 def project_detail(request, slug):

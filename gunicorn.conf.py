@@ -1,37 +1,36 @@
-# Gunicorn configuration file
-import multiprocessing
+# Gunicorn конфигурация с HTTPS поддержкой
 
-# Server socket
 bind = "127.0.0.1:8000"
-backlog = 2048
-
-# Worker processes
-workers = multiprocessing.cpu_count() * 2 + 1
+workers = 3
 worker_class = "sync"
 worker_connections = 1000
+max_requests = 1000
+max_requests_jitter = 100
 timeout = 30
 keepalive = 2
 
-# Restart workers after this many requests, to prevent memory leaks
-max_requests = 1000
-max_requests_jitter = 50
-
-# Logging
+# Логирование
 accesslog = "/var/log/gunicorn/access.log"
 errorlog = "/var/log/gunicorn/error.log"
 loglevel = "info"
-access_log_format = '%(h)s %(l)s %(u)s %(t)s "%(r)s" %(s)s %(b)s "%(f)s" "%(a)s"'
 
-# Process naming
-proc_name = "newspaper_wall"
+# Безопасность
+forwarded_allow_ips = "*"
+secure_scheme_headers = {
+    'X-FORWARDED-PROTOCOL': 'ssl',
+    'X-FORWARDED-PROTO': 'https',
+    'X-FORWARDED-SSL': 'on'
+}
 
-# Server mechanics
+# Процесс
 daemon = False
-pidfile = "/var/run/gunicorn/newspaper_wall.pid"
-user = None
-group = None
-tmp_upload_dir = None
+pidfile = "/var/run/gunicorn/zuif.pid"
+user = "ubuntu"
+group = "ubuntu"
 
-# SSL (uncomment if using HTTPS)
-# keyfile = "/path/to/keyfile"
-# certfile = "/path/to/certfile"
+# Перезапуск
+reload = True
+reload_extra_files = [
+    "/home/ubuntu/zuif/static/",
+    "/home/ubuntu/zuif/templates/"
+]

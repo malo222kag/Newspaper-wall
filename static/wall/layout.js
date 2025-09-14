@@ -675,20 +675,12 @@ class WallApp {
     }
 
     layoutDesktopTiles() {
-        console.log('layoutDesktopTiles called');
-        console.log('Container:', this.container);
-        console.log('Projects:', this.projects);
-        
         this.container.style.display = 'block';
         const containerWidth = this.container.offsetWidth;
         const containerHeight = this.container.offsetHeight;
         
-        console.log('Container size:', containerWidth, 'x', containerHeight);
-        
         const generator = new AdaptiveLayoutGenerator(containerWidth, containerHeight);
         const rectangles = generator.generateLayout(this.projects);
-        
-        console.log('Generated rectangles:', rectangles.length);
         
         this.container.innerHTML = '';
         
@@ -697,16 +689,6 @@ class WallApp {
             this.positionTile(tile, rect);
             this.container.appendChild(tile);
         });
-        
-        // Настраиваем текст после добавления всех блоков в DOM
-        setTimeout(() => {
-            this.container.querySelectorAll('.tile').forEach(tile => {
-                const excerptElement = tile.querySelector('.tile-excerpt');
-                if (excerptElement) {
-                    this.adjustTextToBlockSize(excerptElement, tile);
-                }
-            });
-        }, 100);
 
         this.bindTileEvents();
         this.animateTilesAppearance();
@@ -731,46 +713,6 @@ class WallApp {
         this.bindMobileTileEvents();
     }
 
-    adjustTextToBlockSize(excerptElement, tileElement) {
-        // Получаем размеры блока
-        const tileRect = tileElement.getBoundingClientRect();
-        const tileHeight = tileRect.height;
-        
-        // Получаем реальные размеры заголовка и кнопки
-        const titleElement = tileElement.querySelector('.tile-title');
-        const buttonElement = tileElement.querySelector('.tile-more-btn');
-        
-        const titleHeight = titleElement ? titleElement.offsetHeight : 30;
-        const buttonHeight = buttonElement ? buttonElement.offsetHeight + 16 : 40;
-        const padding = 32; // 1rem * 2 = 32px
-        
-        // Вычисляем доступную высоту для текста
-        const availableHeight = tileHeight - padding - titleHeight - buttonHeight;
-        
-        // Вычисляем количество строк на основе доступной высоты
-        const lineHeight = 20; // высота строки
-        const maxLines = Math.max(10, Math.floor(availableHeight / lineHeight)); // минимум 10 строк
-        
-        // Устанавливаем количество строк
-        excerptElement.style.webkitLineClamp = maxLines.toString();
-        
-        // Убираем все ограничения по высоте
-        excerptElement.style.height = 'auto';
-        excerptElement.style.minHeight = '0';
-        excerptElement.style.maxHeight = 'none';
-        excerptElement.style.flexGrow = '1';
-        excerptElement.style.flexShrink = '1';
-        
-        // Убираем ограничения по количеству строк в CSS
-        excerptElement.style.setProperty('-webkit-line-clamp', maxLines.toString(), 'important');
-        
-        // Если текст не помещается, добавляем многоточие
-        if (excerptElement.scrollHeight > availableHeight) {
-            excerptElement.style.textOverflow = 'ellipsis';
-        } else {
-            excerptElement.style.textOverflow = 'clip';
-        }
-    }
 
     createTile(project, index) {
         const tile = document.createElement('div');
@@ -799,9 +741,8 @@ class WallApp {
         content.style.height = '100%';
         content.style.display = 'flex';
         content.style.flexDirection = 'column';
-        content.style.justifyContent = 'flex-start';
         content.style.textAlign = 'left';
-        content.style.overflow = 'hidden';
+        content.style.overflow = 'visible';
         
         const title = document.createElement('h2');
         title.className = 'tile-title';
@@ -820,31 +761,17 @@ class WallApp {
         excerpt.style.lineHeight = '1.4';
         excerpt.style.color = '#6b7280';
         excerpt.style.wordWrap = 'break-word';
-        excerpt.style.flexGrow = '1';
-        excerpt.style.overflow = 'hidden';
-        excerpt.style.textOverflow = 'ellipsis';
-        excerpt.style.display = '-webkit-box';
-        excerpt.style.webkitBoxOrient = 'vertical';
+        excerpt.style.overflow = 'visible';
+        excerpt.style.textOverflow = 'clip';
+        excerpt.style.flex = '1';
+        excerpt.style.minHeight = '0';
         
         
         const moreBtn = document.createElement('button');
         moreBtn.className = 'tile-more-btn';
         moreBtn.textContent = 'Подробнее';
         moreBtn.dataset.slug = project.slug;
-        moreBtn.style.position = 'absolute';
-        moreBtn.style.bottom = '0.5rem';
-        moreBtn.style.right = '0.5rem';
-        moreBtn.style.background = 'rgba(255, 255, 255, 0.9)';
-        moreBtn.style.border = '1px solid #d1d5db';
-        moreBtn.style.borderRadius = '4px';
-        moreBtn.style.padding = '0.25rem 0.5rem';
-        moreBtn.style.fontSize = '0.75rem';
-        moreBtn.style.color = '#374151';
-        moreBtn.style.cursor = 'pointer';
-        moreBtn.style.transition = 'all 0.2s ease';
-        moreBtn.style.zIndex = '4';
-        moreBtn.style.backdropFilter = 'blur(5px)';
-        moreBtn.style.boxShadow = '0 1px 3px rgba(0, 0, 0, 0.1)';
+        // Стили теперь в CSS
         
         content.appendChild(title);
         content.appendChild(excerpt);
@@ -895,24 +822,6 @@ class WallApp {
         // this.truncateText(tile, rect.width, rect.height);
     }
 
-    truncateText(tile, width, height) {
-        const title = tile.querySelector('.tile-title');
-        const excerpt = tile.querySelector('.tile-excerpt');
-        
-        if (title) {
-            title.style.setProperty('-webkit-line-clamp', 'none');
-        }
-        
-        if (excerpt) {
-            const lineHeight = 20;
-            const titleHeight = 60;
-            const buttonHeight = 40;
-            const availableHeight = height - titleHeight - buttonHeight - 20;
-            const maxLines = Math.floor(availableHeight / lineHeight);
-            
-            excerpt.style.setProperty('-webkit-line-clamp', Math.max(1, maxLines));
-        }
-    }
 
     bindTileEvents() {
         // Обработчики уже привязаны в bindEvents()

@@ -14,6 +14,15 @@
 - **Gunicorn**: 21.2+
 - **Redis**: 6+ (опционально, для кэширования)
 
+## 🔐 HTTPS настройка
+
+Для настройки SSL сертификата используйте:
+
+```bash
+# Запуск скрипта настройки SSL
+./setup_ssl.sh
+```
+
 ## ⚡ Быстрое обновление
 
 Если проект уже развернут, используйте эти команды для обновления:
@@ -201,23 +210,23 @@ python manage.py collectstatic --noinput --settings=newspaper_wall.settings_prod
 
 ```bash
 # Копирование systemd сервиса
-sudo cp newspaper-wall.service /etc/systemd/system/
+sudo cp zuif.service /etc/systemd/system/
 
 # Перезагрузка systemd
 sudo systemctl daemon-reload
 
 # Включение автозапуска
-sudo systemctl enable newspaper-wall
+sudo systemctl enable zuif
 ```
 
 ### 2. Настройка Nginx
 
 ```bash
 # Копирование конфигурации Nginx
-sudo cp nginx_newspaper_wall.conf /etc/nginx/sites-available/newspaper_wall
+sudo cp nginx.conf /etc/nginx/sites-available/zuif
 
 # Создание символической ссылки
-sudo ln -s /etc/nginx/sites-available/newspaper_wall /etc/nginx/sites-enabled/
+sudo ln -s /etc/nginx/sites-available/zuif /etc/nginx/sites-enabled/
 
 # Удаление дефолтной конфигурации
 sudo rm -f /etc/nginx/sites-enabled/default
@@ -251,13 +260,13 @@ sudo chown -R www-data:www-data /var/run/gunicorn
 
 ```bash
 # Запуск Gunicorn
-sudo systemctl start newspaper-wall
+sudo systemctl start zuif
 
 # Запуск Nginx
 sudo systemctl start nginx
 
 # Проверка статуса
-sudo systemctl status newspaper-wall
+sudo systemctl status zuif
 sudo systemctl status nginx
 ```
 
@@ -268,7 +277,7 @@ sudo systemctl status nginx
 curl http://localhost/
 
 # Проверка логов
-sudo journalctl -u newspaper-wall -f
+sudo journalctl -u zuif -f
 sudo tail -f /var/log/nginx/error.log
 ```
 
@@ -332,7 +341,7 @@ CSRF_COOKIE_SECURE=True
 
 ```bash
 # Логи Gunicorn
-sudo journalctl -u newspaper-wall -f
+sudo journalctl -u zuif -f
 
 # Логи Nginx
 sudo tail -f /var/log/nginx/access.log
@@ -346,7 +355,7 @@ tail -f /var/www/newspaper_wall/logs/django.log
 
 ```bash
 # Статус сервисов
-sudo systemctl status newspaper-wall nginx
+sudo systemctl status zuif nginx
 
 # Использование ресурсов
 htop
@@ -390,7 +399,7 @@ tar -xzf media_backup_20240101.tar.gz
 
 ```bash
 # Проверка логов
-sudo journalctl -u newspaper-wall --no-pager -l
+sudo journalctl -u zuif --no-pager -l
 
 # Проверка конфигурации
 python manage.py check --settings=newspaper_wall.settings_production

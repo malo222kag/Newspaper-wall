@@ -40,6 +40,8 @@ html, body {
     will-change: transform, opacity;
     opacity: 0;
     transform: scale(0.8);
+    display: flex;
+    flex-direction: column;
 }
 
 .tile:hover {
@@ -69,9 +71,8 @@ html, body {
     height: 100%;
     display: flex;
     flex-direction: column;
-    justify-content: flex-start;
     text-align: left;
-    overflow: hidden;
+    overflow: visible;
 }
 
 .tile-title {
@@ -93,14 +94,9 @@ html, body {
     text-shadow: 0 1px 2px rgba(255, 255, 255, 0.6);
     word-wrap: break-word;
     hyphens: auto;
-    flex-grow: 1;
-    flex-shrink: 1;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    display: -webkit-box;
-    -webkit-line-clamp: 100; /* Увеличиваем до 100 строк */
-    -webkit-box-orient: vertical;
-    height: auto;
+    overflow: visible;
+    text-overflow: clip;
+    flex: 1;
     min-height: 0;
     max-height: none;
 }
@@ -118,9 +114,8 @@ html, body {
 }
 
 .tile-more-btn {
-    position: absolute;
-    bottom: 0.5rem;
-    right: 0.5rem;
+    margin-top: auto;
+    align-self: flex-end;
     background: rgba(255, 255, 255, 0.9);
     border: 1px solid #d1d5db;
     border-radius: 4px;

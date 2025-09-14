@@ -11,6 +11,11 @@ class AdaptiveLayoutGenerator {
         // Перемешиваем проекты
         const shuffledProjects = this.shuffleArray([...projects]);
         
+        // Специальные раскладки для малого количества проектов
+        if (projects.length === 3) {
+            return this.generateThreeBlockLayout(shuffledProjects);
+        }
+        
         // Рассчитываем размеры блоков в зависимости от количества
         const { rows, cols } = this.calculateGridDimensions(projects.length);
         const blockWidth = (this.containerWidth - this.padding * (cols + 1)) / cols;
@@ -41,15 +46,53 @@ class AdaptiveLayoutGenerator {
         return rectangles;
     }
 
+    generateThreeBlockLayout(projects) {
+        const rectangles = [];
+        
+        // Первый блок - занимает всю верхнюю строку (2 ячейки)
+        const topBlockWidth = this.containerWidth - this.padding * 2;
+        const topBlockHeight = (this.containerHeight - this.padding * 3) / 2;
+        
+        rectangles.push({
+            project: projects[0],
+            x: this.padding,
+            y: this.padding,
+            width: topBlockWidth,
+            height: topBlockHeight
+        });
+        
+        // Второй и третий блоки - занимают нижнюю строку (по 1 ячейке каждый)
+        const bottomBlockWidth = (this.containerWidth - this.padding * 3) / 2;
+        const bottomBlockHeight = (this.containerHeight - this.padding * 3) / 2;
+        
+        rectangles.push({
+            project: projects[1],
+            x: this.padding,
+            y: this.padding * 2 + topBlockHeight,
+            width: bottomBlockWidth,
+            height: bottomBlockHeight
+        });
+        
+        rectangles.push({
+            project: projects[2],
+            x: this.padding * 2 + bottomBlockWidth,
+            y: this.padding * 2 + topBlockHeight,
+            width: bottomBlockWidth,
+            height: bottomBlockHeight
+        });
+        
+        return rectangles;
+    }
+
     calculateGridDimensions(count) {
         if (count === 1) return { rows: 1, cols: 1 };
         if (count === 2) return { rows: 1, cols: 2 };
-        if (count === 3) return { rows: 2, cols: 2 };
+        if (count === 3) return { rows: 2, cols: 2 }; // 2x2 с одним пустым местом
         if (count === 4) return { rows: 2, cols: 2 };
-        if (count === 5) return { rows: 2, cols: 3 };
+        if (count === 5) return { rows: 2, cols: 3 }; // 2x3 с одним пустым местом
         if (count === 6) return { rows: 2, cols: 3 };
-        if (count === 7) return { rows: 3, cols: 3 };
-        if (count === 8) return { rows: 3, cols: 3 };
+        if (count === 7) return { rows: 3, cols: 3 }; // 3x3 с двумя пустыми местами
+        if (count === 8) return { rows: 3, cols: 3 }; // 3x3 с одним пустым местом
         if (count === 9) return { rows: 3, cols: 3 };
         
         // Для большего количества проектов

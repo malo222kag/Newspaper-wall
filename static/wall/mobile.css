@@ -80,7 +80,7 @@ html, body {
     position: relative;
     border-radius: 20px;
     overflow: hidden;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: #fafafa;
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -114,16 +114,16 @@ html, body {
     font-weight: 700;
     line-height: 1.2;
     margin-bottom: 20px;
-    color: #fff;
-    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+    color: #333;
+    text-shadow: none;
     word-wrap: break-word;
 }
 
 .mobile-slide-excerpt {
     font-size: 1.2rem;
     line-height: 1.6;
-    color: rgba(255, 255, 255, 0.9);
-    text-shadow: 0 1px 5px rgba(0, 0, 0, 0.5);
+    color: #666;
+    text-shadow: none;
     margin-bottom: 30px;
     max-height: 50vh;
     overflow-y: auto;
@@ -131,8 +131,8 @@ html, body {
 }
 
 .mobile-slide-btn {
-    background: rgba(255, 255, 255, 0.2);
-    border: 2px solid rgba(255, 255, 255, 0.3);
+    background: #007bff;
+    border: 2px solid #007bff;
     color: #fff;
     padding: 15px 30px;
     border-radius: 50px;
@@ -140,15 +140,14 @@ html, body {
     font-weight: 600;
     cursor: pointer;
     transition: all 0.3s ease;
-    backdrop-filter: blur(10px);
-    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+    text-shadow: none;
 }
 
 .mobile-slide-btn:hover {
-    background: rgba(255, 255, 255, 0.3);
-    border-color: rgba(255, 255, 255, 0.5);
+    background: #0056b3;
+    border-color: #0056b3;
     transform: translateY(-2px);
-    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 10px 20px rgba(0, 123, 255, 0.3);
 }
 
 .mobile-slide-btn:active {

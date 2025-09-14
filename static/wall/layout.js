@@ -701,9 +701,9 @@ class WallApp {
         `;
         
         // Перемешиваем проекты для мобильной версии
-        const shuffledProjects = this.shuffleArray([...this.projects]);
+        this.mobileProjects = this.shuffleArray([...this.projects]);
         
-        shuffledProjects.forEach((project, index) => {
+        this.mobileProjects.forEach((project, index) => {
             const tile = this.createMobileTile(project, index);
             this.mobileContainer.appendChild(tile);
         });
@@ -859,13 +859,61 @@ class WallApp {
 
     bindMobileTileEvents() {
         // Обработчики уже привязаны в bindEvents()
+        
+        // Добавляем поддержку свайпов
+        let startX = 0;
+        let startY = 0;
+        let isSwipe = false;
+        
+        this.mobileContainer.addEventListener('touchstart', (e) => {
+            startX = e.touches[0].clientX;
+            startY = e.touches[0].clientY;
+            isSwipe = false;
+        });
+        
+        this.mobileContainer.addEventListener('touchmove', (e) => {
+            if (!startX || !startY) return;
+            
+            const currentX = e.touches[0].clientX;
+            const currentY = e.touches[0].clientY;
+            
+            const diffX = startX - currentX;
+            const diffY = startY - currentY;
+            
+            // Проверяем, что это горизонтальный свайп
+            if (Math.abs(diffX) > Math.abs(diffY) && Math.abs(diffX) > 50) {
+                isSwipe = true;
+                e.preventDefault(); // Предотвращаем скролл страницы
+            }
+        });
+        
+        this.mobileContainer.addEventListener('touchend', (e) => {
+            if (!isSwipe) return;
+            
+            const endX = e.changedTouches[0].clientX;
+            const diffX = startX - endX;
+            
+            if (Math.abs(diffX) > 50) {
+                if (diffX > 0) {
+                    // Свайп влево - следующий проект
+                    this.nextMobileProject();
+                } else {
+                    // Свайп вправо - предыдущий проект
+                    this.prevMobileProject();
+                }
+            }
+            
+            startX = 0;
+            startY = 0;
+            isSwipe = false;
+        });
     }
 
     createMobileIndicators() {
         const indicatorsContainer = this.mobileContainer.querySelector('.mobile-indicators');
         indicatorsContainer.innerHTML = '';
         
-        this.projects.forEach((_, index) => {
+        this.mobileProjects.forEach((_, index) => {
             const indicator = document.createElement('div');
             indicator.className = 'mobile-indicator';
             indicator.dataset.index = index;
@@ -897,6 +945,18 @@ class WallApp {
         });
         
         this.currentMobileIndex = index;
+    }
+
+    nextMobileProject() {
+        if (this.currentMobileIndex < this.mobileProjects.length - 1) {
+            this.showMobileProject(this.currentMobileIndex + 1);
+        }
+    }
+
+    prevMobileProject() {
+        if (this.currentMobileIndex > 0) {
+            this.showMobileProject(this.currentMobileIndex - 1);
+        }
     }
 
     shuffleArray(array) {

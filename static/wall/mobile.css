@@ -157,7 +157,7 @@ html, body {
 /* Индикаторы */
 .mobile-indicators {
     position: fixed;
-    top: 80px;
+    top: 20px;
     left: 50%;
     transform: translateX(-50%);
     display: flex;

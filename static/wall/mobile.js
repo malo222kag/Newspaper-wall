@@ -19,15 +19,6 @@ class MobileApp {
     }
 
     bindEvents() {
-        // Навигационные кнопки
-        document.getElementById('prev-btn').addEventListener('click', () => {
-            this.prevSlide();
-        });
-
-        document.getElementById('next-btn').addEventListener('click', () => {
-            this.nextSlide();
-        });
-
         // Индикаторы
         document.querySelectorAll('.mobile-indicator').forEach((indicator, index) => {
             indicator.addEventListener('click', () => {
@@ -176,16 +167,6 @@ class MobileApp {
             indicator.classList.toggle('active', index === this.currentIndex);
         });
 
-        // Обновляем счетчик
-        const counter = document.getElementById('slide-counter');
-        counter.textContent = `${this.currentIndex + 1} / ${this.totalSlides}`;
-
-        // Обновляем кнопки навигации
-        const prevBtn = document.getElementById('prev-btn');
-        const nextBtn = document.getElementById('next-btn');
-        
-        prevBtn.disabled = this.currentIndex === 0;
-        nextBtn.disabled = this.currentIndex === this.totalSlides - 1;
 
         // Добавляем активный класс к текущему слайду
         document.querySelectorAll('.mobile-slide').forEach((slide, index) => {
